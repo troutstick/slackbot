@@ -1,0 +1,5 @@
+gunicorn
+gspread
+oauth2client
+flask
+threading
