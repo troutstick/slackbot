@@ -7,6 +7,9 @@ import re
 import requests
 import os
 
+# Error Imports
+from utils import error_res
+
 # Authorization
 DIRNAME = os.path.dirname(__file__)
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
@@ -15,13 +18,16 @@ scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/au
 tracker_creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(DIRNAME, 'assets/creds/tracker_creds.json'), scope)
 tracker_client = gspread.authorize(tracker_creds)
 
-sheet = tracker_client.open('UPE Candidate Tracker (LIVE)')
+sheet = tracker_client.open('Candidate Tracking Sheet (Internal)')
 
 # Sheet Names
 candSheet = sheet.worksheet("Candidate Tracker")
 socialSheet = sheet.worksheet('Socials')
 profSheet = sheet.worksheet('Professional Events')
 onoSheet = sheet.worksheet('One-On-Ones')
+
+# Help Text
+helpTxt = [{'text': "Type `/check <candidate name>` to view a candidate's status"}]
 
 # Standand Google SpreadSheet Excel Column Locations
 standardCol = {
@@ -87,17 +93,25 @@ Example dct[<candidate name>]
 }
 """
 def getMatchedCandidates(expr):
-    def getCandidateEvents(sheetName, jump):
-        # Labels of current sheet
-        sheetLabels = sheetName.row_values(1)
+    def getCandidateEvents(sheetName, event):
+        # Configure whether event is One-on-Ones or not
+        jump = 1
+        sheetLabels = sheetName.row_values(2)
+        candidate_row_loc = candRow + 1 # Prof / Social Sheet off by one bc of passwords listed
+        if event == 'onos':
+            jump = 2
+            # Labels of current sheet
+            sheetLabels = sheetName.row_values(1)
+            candidate_row_loc = candRow
+        
         # Candidate Info on current sheet
-        candSheet = sheetName.row_values(candRow)
+        candSheet = sheetName.row_values(candidate_row_loc)
 
         eventsVisited = []
         for eventIndex in range(4, len(sheetLabels)-2, jump):
             if candSheet[eventIndex] and jump == 2:
                 eventsVisited.append("{type} : {name}".format(type=candSheet[eventIndex], name=candSheet[eventIndex+1]))
-            elif candSheet[eventIndex]:
+            elif candSheet[eventIndex] == '1' and candSheet[eventIndex] != "":
                 eventsVisited.append(sheetLabels[eventIndex])
 
         return eventsVisited
@@ -123,11 +137,11 @@ def getMatchedCandidates(expr):
                 candInfo[col] = candidate[colNum-1]
 
         # Insert `Socials` contents into dictionary
-        candInfo['socials'] = getCandidateEvents(socialSheet, 1)
+        candInfo['socials'] = getCandidateEvents(socialSheet, 'socials')
         # Insert `Professional Events` contents into dictionary
-        candInfo['prof'] = getCandidateEvents(profSheet, 1)
+        candInfo['prof'] = getCandidateEvents(profSheet, 'prof')
         # Insert `One-on-Ones` contents into dictionary
-        candInfo['onos'] = getCandidateEvents(onoSheet, 2)
+        candInfo['onos'] = getCandidateEvents(onoSheet, 'onos')
 
 
         candidates[candidate[standardCol['name'] - 1]] = candInfo
@@ -219,7 +233,7 @@ def formatCandidateText(dct):
 """
 Runs bread and butter of code and POST back to slack
 """
-def runGoogleSheets(req):
+def track_candidates(req):
     # Login into client
     if tracker_creds.access_token_expired:
         tracker_client.login()
@@ -228,14 +242,14 @@ def runGoogleSheets(req):
 
     # Check if argument len is sufficient
     if len(req['text']) < 3:
-        error('Please submit an expression with more than two characters', actions['/check']['helpTxt'], req['response_url'])
+        error_res('Please submit an expression with more than two characters', helpTxt, req['response_url'])
         return
 
     # Retrieve candidate info according to text in Slack payload
     candidateInfos = getMatchedCandidates(req['text'])
 
     if len(candidateInfos) == 0:
-        error('No candidates found with given keyword', actions['/check']['helpTxt'], req['response_url'])
+        error_res('No candidates found with given keyword', helpTxt, req['response_url'])
         return
 
     # Format candidate info into Slack JSON format

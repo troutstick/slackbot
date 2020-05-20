@@ -5,7 +5,7 @@ REQUIREMENTS
 Have there's as environment variables
    export SLACK_VERIFICATION_TOKEN= <app verification token>
    export SLACK_TEAM_ID= <slack channel team id>
-   export FLASK_APP= upe-tracker.py (not needed when using gunicorn on OCF)
+   export FLASK_APP= slackbot.py (not needed when using gunicorn on OCF)
 
 To find slack variables,
 1) Slack TEAM_ID = located in browser URL in workspace in the form T-------
@@ -21,6 +21,8 @@ app = Flask(__name__)
 
 # Other files
 from candidate_tracker import *
+from event import *
+from utils import *
 
 '''
 List of valid commands and their help text if errors
@@ -29,13 +31,12 @@ actions = {
     '/check' : {
         'helpTxt' : [{'text': "Type `/check <candidate name>` to view a candidate's status"}],
     },
-    '/announcements' : {
-        'helpTxt' : [{'text': 'Type `/announcements <optional type>` to view current announcements'}]
+    '/newevent' : {
+        'helpTxt' : [{'text': 'Type `/newevent <type> "<name>" <date> <password>` to create a new event'}]
     },
     '/checkoff' : {
         'helpTxt' : [{'text': 'Type `/checkoff <INSERT INFO HERE>` to checkoff a given candidate'}]
     },
-    '/test' : {},
 }
 
 # ---------- Authenticating ----------
@@ -54,23 +55,13 @@ Checks whether provided action is a possible command
 def actionIsValid(action):
     return action in actions
 
-"""
-POST Error message to Slack
-"""
-def error(msg, attachments):
-    return jsonify(
-        response_type='ephemeral',
-        text=msg,
-        attachments=attachments,
-    )
-
 # ---------- Commands ----------
 """
 POST request from Slack channel
 Command: `/check <candidate name>`
 """
-@app.route('/candidatetracker/check', methods=['POST'])
-def track_candidates():
+@app.route('/check', methods=['POST'])
+def check_candidates():
     # Check if valid request through (team_id) and (token)
     if not is_request_valid(request):
         abort(400)
@@ -82,9 +73,9 @@ def track_candidates():
     if not actionIsValid(req['command']):
         return error('Please submit a valid command', actions['/check']['helpTxt'])
     
-    # Create a thread to spawn find the correct values to mitigate 3 seconds
+    # Create a thread to spawn find the correct values
     processThread = threading.Thread(
-            target=runGoogleSheets,
+            target=track_candidates,
             args=(req,)
         )
     processThread.start()
@@ -94,6 +85,39 @@ def track_candidates():
         response_type='ephemeral',
         text='Loading your candidate data...',
     )
+
+"""
+POST request from Slack channel
+Command: `/newevent <candidate name>`
+Condition: made only in #events channel
+"""
+@app.route('/event', methods=['POST'])
+def new_event():
+    # Check if valid request through (team_id) and (token)
+    if not is_request_valid(request):
+        abort(400)
+
+    # Retrieve payload from Slack
+    req = request.form
+
+    # Check if possible command
+    if not actionIsValid(req['command']):
+        return error('Please submit a valid command', actions['/newevent']['helpTxt'])
+    
+    # Create a thread to spawn find the correct values to mitigate 3 seconds
+    processThread = threading.Thread(
+            target=create_event,
+            args=(req,)
+        )
+    processThread.start()
+
+    # Send back a temporary loading response
+    return jsonify(
+        response_type='ephemeral',
+        text='Creating new event...',
+    )
+
+
 
 # """
 # POST request from Slack channel
