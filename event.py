@@ -1,4 +1,3 @@
-
 # Google Sheets Imports
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
@@ -63,7 +62,8 @@ def parseEvent(text):
          return None, None, None, 'Invalid command entry (e.g. `/newevent prof "Company" 2/24 hello`)'
 
     event_guess = match_text.group(1).lower()
-    event_name = "{name} ({date})".format(name=match_text.group(2), date=match_text.group(3))
+    event_date = match_text.group(3)
+    event_name = "{name} ({date})".format(name=match_text.group(2), date=event_date)
     event_pwd = match_text.group(4)
 
     socials = ['s', 'soc', 'social', 'socials']
@@ -75,13 +75,35 @@ def parseEvent(text):
         event_type = 'prof'
     else:
         return None, None, None, 'Invalid Event. `social` or `prof` are possible events'
-        
+    
+    # Name Checking
     if len(event_name) < 10:
         return None, None, None, 'Specify a proper event name (e.g. Codenames (2/29))'
     
+    # Date Checking
+    slash_index = event_date.index("/")
+    month = int(event_date[:slash_index])
+    day = int(event_date[slash_index+1:])
+
+    if (month < 1 or month > 12) or (day < 1 or day > 31):
+        return None, None, None, 'Invalid date provided'
+    
+    # Covering Feburary
+    if (month== 2) and (day > 29):
+        return None, None, None, 'Invalid date provided'
+
+    # Covering March, June, September, November max 30 days
+    if (month == 4 or month == 6 or month == 9 or month == 11) and (day > 30):
+        return None, None, None, 'Invalid date provided'
+
+    # Password Checking
     if len(event_pwd) < 5:
         return None, None, None, 'Passwords must be longer than 5 characters'
+
+    if len(text) != len(match_text.group(0)):
+        return None, None, None, 'Password must be space-less'
     
+    # Everything works
     return event_type, event_name, event_pwd, None
     
 """
@@ -94,7 +116,7 @@ def create_event(req):
     
     # Check if request stemmed from #events channel
     if req['channel_name'] != 'events':
-        return error_res('Command not submitted in #events channel', helpTxt, req['response_url'])
+        return error_res('Command must be submitted in #events channel', helpTxt, req['response_url'])
     
     event, name, pwd, err = parseEvent(req['text'])
 
@@ -110,6 +132,18 @@ def create_event(req):
 
     data = {
         'response_type': 'ephemeral',
-        'text': 'Sucessfully created a {event} event with {name} and {pwd}'.format(event=event, name=name, pwd=pwd)
+        "blocks": [
+		{
+			"type": "section",
+			"text": {
+				"type": "mrkdwn",
+				"text": "Successfully added {name} as an event to the spreadsheet \n To finish creating an event remember to add it to the UPE Google Calendar!".format(name=name)
+			}
+            
+		},
+		{
+			"type": "divider"
+		}
+        ]
     }
     requests.post(req['response_url'], json=data)
