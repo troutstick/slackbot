@@ -20,9 +20,13 @@ from flask import abort, Flask, jsonify, request
 app = Flask(__name__)
 
 # Other files
-from candidate_tracker import *
-from event import *
+from candidate_tracker import track_candidates
+from event import create_event
+from challenge import assign_challenge
+from checkoff import checkoff_candidate
 from utils import *
+from settings import *
+
 
 '''
 List of valid commands and their help text if errors
@@ -37,6 +41,9 @@ actions = {
     '/checkoff' : {
         'helpTxt' : [{'text': 'Type `/checkoff <INSERT INFO HERE>` to checkoff a given candidate'}]
     },
+    '/challenge' : {
+        'helpTxt' : [{'text': 'Type `/challenge <INSERT INFO HERE> to assign a challenge for a given chandidate'}]
+    }
 }
 
 # ---------- Authenticating ----------
@@ -54,6 +61,7 @@ Checks whether provided action is a possible command
 """
 def actionIsValid(action):
     return action in actions
+
 
 # ---------- Commands ----------
 """
@@ -117,42 +125,67 @@ def new_event():
         text='Creating new event...',
     )
 
+"""
+POST request from Slack channel
+Command: `/checkoff <candidate name>`
+"""
+@app.route('/checkoff', methods=['POST'])
+def checkoff():
+    # Check if valid request through (team_id) and (token)
+    if not is_request_valid(request):
+        abort(400)
 
+    # Retrieve payload from Slack
+    req = request.form
 
-# """
-# POST request from Slack channel
-# Command: `/checkoff <candidate name>`
-# """
-# @app.route('/checkoff', methods=['POST'])
-# def checkoff_candidates():
-#     # Check if valid request through (team_id) and (token)
-#     if not is_request_valid(request):
-#         abort(400)
+    # Check if possible command
+    if not actionIsValid(req['command']):
+        return error('Please submit a valid command', actions['/challenge']['helpTxt'])
+    
+    # Create a thread to spawn find the correct values to mitigate 3 seconds
+    processThread = threading.Thread(
+            target=checkoff_candidate,
+            args=(req,)
+        )
+    processThread.start()
 
-#     # Retrieve payload from Slack
-#     req = request.form
+    # Send back a temporary loading response
+    return jsonify(
+        response_type='ephemeral',
+        text='Checking off candidate...',
+    )
+        
 
-#     # Check if possible command
-#     if not actionIsValid(req['command']):
-#         return error('Please submit a valid command', actions['/checkoff']['helpTxt'])
-#         
+"""
+POST request from Slack channel
+Command: `/challenge <INSERT VALUES HERE>`
+Condition: made only in #officers channel
+"""
+@app.route('/challenge', methods=['POST'])
+def new_challenge():
+    # Check if valid request through (team_id) and (token)
+    if not is_request_valid(request):
+        abort(400)
 
-# """
-# POST request from Slack channel
-# Command: `/announcements <optional: type>`
-# """
-# @app.route('/announcements', methods=['POST'])
-# def announcements():
-#     # Check if valid request through (team_id) and (token)
-#     if not is_request_valid(request):
-#         abort(400)
+    # Retrieve payload from Slack
+    req = request.form
 
-#     # Retrieve payload from Slack
-#     req = request.form
+    # Check if possible command
+    if not actionIsValid(req['command']):
+        return error('Please submit a valid command', actions['/challenge']['helpTxt'])
+    
+    # Create a thread to spawn find the correct values to mitigate 3 seconds
+    processThread = threading.Thread(
+            target=assign_challenge,
+            args=(req,)
+        )
+    processThread.start()
 
-#     # Check if possible command
-#     if not actionIsValid(req['command']):
-#         return error('Please submit a valid command', actions['/announcements']['helpTxt'])
+    # Send back a temporary loading response
+    return jsonify(
+        response_type='ephemeral',
+        text='Creating new challenge...',
+    )
 
 """
 GET request for testing

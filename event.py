@@ -1,31 +1,20 @@
 # Google Sheets Imports
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 
 # Flask Imports
 import re
 import requests
-import os
 
 # Error Imports
 from utils import *
-
-# Authorization
-DIRNAME = os.path.dirname(__file__)
-scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-
-# Candidate Tracker / Announcements
-tracker_creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(DIRNAME, 'assets/creds/tracker_creds.json'), scope)
-tracker_client = gspread.authorize(tracker_creds)
-
-sheet = tracker_client.open('Candidate Tracking Sheet (Internal)')
+import settings
+import authorization
 
 # Help Text
 helpTxt = [{'text': 'Type `/newevent <type> "<name>" <date> <password>` to create a new event'}]
 
-# Sheet Names
-socialSheet = sheet.worksheet('Socials')
-profSheet = sheet.worksheet('Professional Events')
+sheetNames = ['Socials', 'Professional Events']
+socialSheet, profSheet = authorization.getSheetObjects(sheetNames)
 
 
 def addEvent(event, name, pwd):
@@ -111,11 +100,11 @@ def parseEvent(text):
 """
 def create_event(req):
     # Login into client
-    if tracker_creds.access_token_expired:
-        tracker_client.login()
+    authorization.login()
     
     # Check if request stemmed from #events channel
-    if req['channel_name'] != 'events':
+    softdev_id = settings.getChannelIDs()['softdev-bot-testing']
+    if req['channel_name'] != 'events' and req['channel_id'] != softdev_id:
         return error_res('Command must be submitted in #events channel', helpTxt, req['response_url'])
     
     event, name, pwd, err = parseEvent(req['text'])

@@ -1,74 +1,27 @@
 # Google Sheets Imports
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
 
 # Flask Imports
 import re
 import requests
-import os
 
 # Error Imports
-from utils import error_res
+from utils import error_res, matchAllCandidates
+import settings
+import authorization
 
-# Authorization
-DIRNAME = os.path.dirname(__file__)
-scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-
-# Candidate Tracker / Announcements
-tracker_creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(DIRNAME, 'assets/creds/tracker_creds.json'), scope)
-tracker_client = gspread.authorize(tracker_creds)
-
-sheet = tracker_client.open('Candidate Tracking Sheet (Internal)')
-
-# Sheet Names
-candSheet = sheet.worksheet("Candidate Tracker")
-socialSheet = sheet.worksheet('Socials')
-profSheet = sheet.worksheet('Professional Events')
-onoSheet = sheet.worksheet('One-On-Ones')
+sheetNames = ['Candidate Tracker', 'Socials', 'Professional Events', 'One-On-Ones']
+candSheet, socialSheet, profSheet, onoSheet = authorization.getSheetObjects(sheetNames)
 
 # Help Text
 helpTxt = [{'text': "Type `/check <candidate name>` to view a candidate's status"}]
 
 # Standand Google SpreadSheet Excel Column Locations
-standardCol = {
-    'email': 1,
-    'name': 2,
-    'track': 3,
-    'committee': 4
-}
+standardCol = settings.getFixedStandardColumns()
+
 # Candidate Tracker Sheet Column Values
-candSheetCol = {
-    'socials_complete': 8,
-    'socials_reqs': 12,
-    'prof_complete': 9,
-    'prof_reqs': 13,
-    'ono_complete': 10,
-    'ono_reqs': 14,
-    'gm1': 20,
-    'gm2': 21,
-    'gm3': 22,
-    'paid': 23,
-    'challenge': 25,
-    'challenge_task': 26,
-    'socials_ono_comp': 11, #DELETE THIS AFTER SP20 SEM
-    'socials_ono_reqs': 15 #DELETE THIS AFTER SP20 SEM
-}
+candSheetCol = settings.getCandidateTrackerColumns()
 
-
-"""
-Find the Google Sheet row of each name matching with expr
-"""
-def matchAllCandidates(expr):
-    expr = expr.lower()
-    nameIndices = []
-    nameLst = candSheet.col_values(standardCol['name'])[1:]
-
-    for i in range(len(nameLst)):
-        # expr matches candidate name
-        if re.search(expr, nameLst[i].lower()):
-            nameIndices.append(i+2)
-
-    return nameIndices
 
 """
 Search for candidate given regex expr
@@ -120,7 +73,7 @@ def getMatchedCandidates(expr):
     candidates = {}
 
     # Locate rows of candidates matching with name
-    matchedLst = matchAllCandidates(expr)
+    matchedLst = matchAllCandidates(expr, candSheet)
 
     # Retrieve respective information for every candidate
     for candRow in matchedLst:
@@ -178,7 +131,7 @@ def formatCandidateText(dct):
             onoTxt += '\t - {ono}\n'.format(ono=ono)
 
         # Challenge
-        challengeTxt = '• Challenge: {done}\n'.format(done='Done' if candInfo['challenge']=='YES' else '*NO*')
+        challengeTxt = '• Challenge: {done}\n'.format(done='Done' if candInfo['challenge_finished']=='YES' else '*NO*')
         if candInfo['challenge_task']:
             challengeTxt += '\t - {task}\n'.format(task=candInfo['challenge_task'])
 
@@ -235,8 +188,7 @@ Runs bread and butter of code and POST back to slack
 """
 def track_candidates(req):
     # Login into client
-    if tracker_creds.access_token_expired:
-        tracker_client.login()
+    authorization.login()
     
     response_url = req['response_url']
 
