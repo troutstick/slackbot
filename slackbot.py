@@ -80,7 +80,7 @@ def check_candidates():
     # Check if possible command
     if not actionIsValid(req['command']):
         return error('Please submit a valid command', actions['/check']['helpTxt'])
-    
+
     # Create a thread to spawn find the correct values
     processThread = threading.Thread(
             target=track_candidates,
@@ -111,7 +111,7 @@ def new_event():
     # Check if possible command
     if not actionIsValid(req['command']):
         return error('Please submit a valid command', actions['/newevent']['helpTxt'])
-    
+
     # Create a thread to spawn find the correct values to mitigate 3 seconds
     processThread = threading.Thread(
             target=create_event,
@@ -141,7 +141,7 @@ def checkoff():
     # Check if possible command
     if not actionIsValid(req['command']):
         return error('Please submit a valid command', actions['/challenge']['helpTxt'])
-    
+
     # Create a thread to spawn find the correct values to mitigate 3 seconds
     processThread = threading.Thread(
             target=checkoff_candidate,
@@ -154,7 +154,7 @@ def checkoff():
         response_type='ephemeral',
         text='Checking off candidate...',
     )
-        
+
 
 """
 POST request from Slack channel
@@ -173,7 +173,7 @@ def new_challenge():
     # Check if possible command
     if not actionIsValid(req['command']):
         return error('Please submit a valid command', actions['/challenge']['helpTxt'])
-    
+
     # Create a thread to spawn find the correct values to mitigate 3 seconds
     processThread = threading.Thread(
             target=assign_challenge,

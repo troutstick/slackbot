@@ -25,7 +25,7 @@ def parseText(text):
 
     if match_text == None:
         return None, None, "Invalid command entry (e.g. /checkoff o John Doe"
-    
+
     event_type = match_text.group(1).lower()
     candidate_name = match_text.group(2)
 
@@ -42,7 +42,7 @@ def parseText(text):
         return 'prof', candidate_name, None
     elif event_type in chall:
         return 'chall', candidate_name, None
-    
+
     return None, None, "Invalid event type. o - office hours, s - socials, p - professional, c - challenge"
 
 """
@@ -54,13 +54,13 @@ def validChannel(event_type, channel_id):
     # Bypass all channel access rights
     if channel_dct['softdev-bot-testing'] == channel_id:
         return None
-    
+
     # Office hours command can be ran in #office-hours and #officers
     if event_type == 'oh' and channel_dct['office-hours'] != channel_id and channel_dct['officers'] != channel_id:
         return 'Office Hour command must be submitting in #office-hours channel'
     elif channel_dct['officers'] != channel_id:
         return 'Command must be submitted in #officers channel'
-    
+
     return None
 
 def getCandidateNames(lst):
@@ -79,19 +79,19 @@ def checkoff_office_hours(candidate_row_number):
 
     # Candidate email (unique number)
     candidate_email = candidate_row[settings.getFixedStandardColumns()['email']-1]
-    
+
     # Get number of feedback Ones in Feedback form
-    oh_feedback_cols = settings.getOfficeHourFeedbackColumns() 
+    oh_feedback_cols = settings.getOfficeHourFeedbackColumns()
     feedback_emails = feedback_sheet.col_values(oh_feedback_cols['email'])
 
     feedback_count = feedback_emails.count(candidate_email)
 
     if current_count > feedback_count:
         return "Something went wrong: candidate sheet checked off more than feedback form please examine it"
-    
+
     if current_count == feedback_count:
         return "Candidate has already been checked off for all Office Hours"
-    
+
     # Find latest cell value
     new_feedback_row_number = [i for i, email in enumerate(feedback_emails) if email == candidate_email][current_count]
     new_feedback_row = feedback_sheet.row_values(new_feedback_row_number)
@@ -107,21 +107,21 @@ def checkoff_office_hours(candidate_row_number):
     # Update cell values with current content
     onoSheet.update_cell(candidate_row_number, empty_index_col, oh_type)
     onoSheet.update_cell(candidate_row_number, empty_index_col+1, oh_name)
-    
+
     return 'Successfully checked off {type} by {name}'.format(type=oh_type, name=oh_name)
-    
+
 """
 
 """
 def checkoff_challenge(candidate_row_number):
     challenge_col = settings.getCandidateTrackerColumns()['challenge_finished']
-    
+
     challenge_cell_value = candSheet.cell(candidate_row_number, challenge_col).value
 
     if challenge_cell_value == "YES":
         return "Candidate was previously checked off already"
-    
-    candSheet.update_cell(candidate_row, challenge_col, "YES")
+
+    candSheet.update_cell(candidate_row_number, challenge_col, "YES")
     return 'Successfully checked off candidate for their challenge!'
 
 """
@@ -136,21 +136,21 @@ def checkoff_candidate(req):
     if err:
         error_res(err, helpTxt, req['response_url'])
         return
-    
+
     # Check command originated in correct channel
     err = validChannel(event_type, req['channel_id'])
     if err:
         error_res(err, helpTxt, req['response_url'])
         return
-    
+
     # MatchAll candidate
     matched_candidiate_list = matchAllCandidates(candidate_name, candSheet)
     if len(matched_candidiate_list) == 0:
         error_res("No matched candidate found", helpTxt, req['response_url'])
-    
+
     if len(matched_candidiate_list) > 3:
         error_res("Multiple candidate name matches, please be more specific", helpTxt, req['response_url'])
-    
+
     matched_candidate_names = getCandidateNames(matched_candidiate_list)
     if len(matched_candidiate_list) > 1:
         candidate_text = ' '.join(matched_candidate_names)
@@ -161,7 +161,7 @@ def checkoff_candidate(req):
     if event_type == 'oh':
         # Checkoff Office Hour
         text = checkoff_office_hours(matched_candidiate_list[0])
-        
+
     elif event_type == 'social' or event_type == 'prof':
         # TODO
         error_res("Command not implemented yet", helpTxt, req['response_url'])
@@ -169,7 +169,7 @@ def checkoff_candidate(req):
     else:
         # Checkoff Challenge
         text = checkoff_challenge(matched_candidiate_list[0])
-    
+
 
     data = {
         'response_type': 'ephemeral',
@@ -180,7 +180,7 @@ def checkoff_candidate(req):
 				"type": "mrkdwn",
 				"text": text
 			}
-            
+
 		},
 		{
 			"type": "divider"
@@ -188,4 +188,4 @@ def checkoff_candidate(req):
         ]
     }
     requests.post(req['response_url'], json=data)
-    
+

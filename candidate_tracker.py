@@ -56,7 +56,7 @@ def getMatchedCandidates(expr):
             # Labels of current sheet
             sheetLabels = sheetName.row_values(1)
             candidate_row_loc = candRow
-        
+
         # Candidate Info on current sheet
         candSheet = sheetName.row_values(candidate_row_loc)
 
@@ -189,7 +189,7 @@ Runs bread and butter of code and POST back to slack
 def track_candidates(req):
     # Login into client
     authorization.login()
-    
+
     response_url = req['response_url']
 
     # Check if argument len is sufficient
