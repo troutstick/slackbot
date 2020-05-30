@@ -10,7 +10,7 @@ import settings
 DIRNAME = os.path.dirname(__file__)
 scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
 
-# Candidate Tracker / Announcements
+# Candidate Tracker API Authentication
 creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(DIRNAME, 'assets/creds/tracker_creds.json'), scope)
 client = gspread.authorize(creds)
 
@@ -42,7 +42,15 @@ def login():
     if creds.access_token_expired:
         client.login()
 
-def getSheetObjects(spreadsheetsNames):
+"""
+Return the spreadsheet Objects according to those requested
+@params spreadsheetsNames - list of requested sheet names
+@return lst - list of list of allowed keywords
+"""
+def get_sheet_objects(spreadsheetsNames):
+    if len(spreadsheetsNames) == 1:
+        return sheetNames[spreadsheetsNames[0]]
+
     lst = []
     for name in spreadsheetsNames:
         lst.append(sheetNames[name])

@@ -1,114 +1,37 @@
 """
-REQUIREMENTS
-Have there's as environment variables
-   export SLACK_VERIFICATION_TOKEN= <app verification token>
-   export SLACK_TEAM_ID= <slack channel team id>
-   export FLASK_APP= upe-tracker.py (not needed when using gunicorn on OCF)
-
-To find slack variables,
-1) Slack TEAM_ID = located in browser URL in workspace in the form T-------
-2) Slack Verification Token = check app for verification token
+UPE Slack Bot Slack Commands
+----------------------------------------------------------------------------
+/check <candidate name>
+- Retrieves candidate values from spreadsheet
 """
-
 # Google Sheets Imports
 import gspread
-from oauth2client.service_account import ServiceAccountCredentials
-import re
 
 # Flask Imports
+import re
 import requests
-import os
-from flask import abort, Flask, jsonify, request
 
-# Zappa Imports
-# from zappa.asynchronous import task
+# Package Importss
+import authorization
+import settings
+import utils
 
-# Threading Imports
-import threading
+# Spreadsheet Objects
+sheetNames = ['Candidate Tracker', 'Socials', 'Professional Events', 'One-On-Ones']
+candSheet, socialSheet, profSheet, onoSheet = authorization.get_sheet_objects(sheetNames)
 
-# Authorization
-DIRNAME = os.path.dirname(__file__)
-scope = ['https://spreadsheets.google.com/feeds', 'https://www.googleapis.com/auth/drive']
-creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(DIRNAME, 'client_creds.json'), scope)
-client = gspread.authorize(creds)
-
-# SpreadSheet
-sheet = client.open('UPE Candidate Tracker (LIVE)')
-# Sheet Names
-candSheet = sheet.worksheet("Candidate Tracker")
-socialSheet = sheet.worksheet('Socials')
-profSheet = sheet.worksheet('Professional Events')
-onoSheet = sheet.worksheet('One-On-Ones')
+# Help Text
+helpTxt = settings.get_actions()['/check']['helpTxt']
 
 # Standand Google SpreadSheet Excel Column Locations
-standardCol = {
-    'email': 1,
-    'name': 2,
-    'track': 3,
-    'committee': 4
-}
+standardCol = settings.get_fixed_column_values()
 # Candidate Tracker Sheet Column Values
-candSheetCol = {
-    'socials_complete': 8,
-    'socials_reqs': 12,
-    'prof_complete': 9,
-    'prof_reqs': 13,
-    'ono_complete': 10,
-    'ono_reqs': 14,
-    'gm1': 20,
-    'gm2': 21,
-    'gm3': 22,
-    'paid': 23,
-    'challenge': 25,
-    'challenge_task': 26,
-    'socials_ono_comp': 11, #DELETE THIS AFTER SP20 SEM
-    'socials_ono_reqs': 15 #DELETE THIS AFTER SP20 SEM
-}
-maxCol = max(candSheetCol.values())
-
-app = Flask(__name__)
-
-# Possible actions
-actions = {
-    '/check' : {
-        'helpTxt' : [{'text': "Type `/check <candidate name>` to view a candidate's status"}],
-    }
-}
-
-"""
-Checks whether provided action is a possible command
-"""
-def actionIsValid(action):
-    return action in actions
-
-"""
-Checks whether payload matches correct verfication token and team ID
-"""
-def is_request_valid(request):
-    is_token_valid = request.form['token'] == os.environ['SLACK_VERIFICATION_TOKEN']
-    is_team_id_valid = request.form['team_id'] == os.environ['SLACK_TEAM_ID']
-
-    return is_token_valid and is_team_id_valid
-
-"""
-Find the Google Sheet row of each name matching with expr
-"""
-def matchAllCandidates(expr):
-    expr = expr.lower()
-    nameIndices = []
-    nameLst = candSheet.col_values(standardCol['name'])[1:]
-
-    for i in range(len(nameLst)):
-        # expr matches candidate name
-        if re.search(expr, nameLst[i].lower()):
-            nameIndices.append(i+2)
-
-    return nameIndices
+candSheetCol = settings.get_candidate_columns()
 
 """
 Search for candidate given regex expr
 @param expr - regex expression from typed comment `/check <expr>`
-@return dictionary each candidate's info matching <expr>
+@return dictionary each candidates' info matching <expr>
 Example dct[<candidate name>]
 {
     'socials_complete': '1',
@@ -128,26 +51,38 @@ Example dct[<candidate name>]
 }
 """
 def getMatchedCandidates(expr):
-    def getCandidateEvents(sheetName, jump):
-        # Labels of current sheet
-        sheetLabels = sheetName.row_values(1)
-        # Candidate Info on current sheet
-        candSheet = sheetName.row_values(candRow)
+    def getCandidateEvents(sheetName, event):
+        # Configure whether event is One-on-Ones or not
+        jump = 1
+        sheetLabels = sheetName.row_values(2)
+        candidate_row_loc = candRow + 1 # Prof / Social Sheet off by one bc of passwords listed
+        if event == 'onos':
+            jump = 2
+            # Labels of current sheet
+            sheetLabels = sheetName.row_values(1)
+            candidate_row_loc = candRow
 
+        # Remove excess columns
+        sheetLabels = sheetLabels[4:len(sheetLabels)-1]
+
+        # Candidate Info on current sheet
+        candSheet = sheetName.row_values(candidate_row_loc)
+
+        # Add visited events into list
         eventsVisited = []
-        for eventIndex in range(4, len(sheetLabels)-2, jump):
+        for eventIndex in range(sheetLabels, jump):
+            # Different scenarios for 1-1s and other event types
             if candSheet[eventIndex] and jump == 2:
                 eventsVisited.append("{type} : {name}".format(type=candSheet[eventIndex], name=candSheet[eventIndex+1]))
-            elif candSheet[eventIndex]:
+            elif candSheet[eventIndex] == '1' and candSheet[eventIndex] != "":
                 eventsVisited.append(sheetLabels[eventIndex])
 
         return eventsVisited
 
-
     candidates = {}
 
     # Locate rows of candidates matching with name
-    matchedLst = matchAllCandidates(expr)
+    matchedLst = utils.get_candidate_row_number(expr, candSheet)
 
     # Retrieve respective information for every candidate
     for candRow in matchedLst:
@@ -164,13 +99,13 @@ def getMatchedCandidates(expr):
                 candInfo[col] = candidate[colNum-1]
 
         # Insert `Socials` contents into dictionary
-        candInfo['socials'] = getCandidateEvents(socialSheet, 1)
+        candInfo['socials'] = getCandidateEvents(socialSheet, 'socials')
         # Insert `Professional Events` contents into dictionary
-        candInfo['prof'] = getCandidateEvents(profSheet, 1)
+        candInfo['prof'] = getCandidateEvents(profSheet, 'prof')
         # Insert `One-on-Ones` contents into dictionary
-        candInfo['onos'] = getCandidateEvents(onoSheet, 2)
+        candInfo['onos'] = getCandidateEvents(onoSheet, 'onos')
 
-
+        # Add candidate object into dictionary
         candidates[candidate[standardCol['name'] - 1]] = candInfo
 
     return candidates
@@ -205,7 +140,7 @@ def formatCandidateText(dct):
             onoTxt += '\t - {ono}\n'.format(ono=ono)
 
         # Challenge
-        challengeTxt = '• Challenge: {done}\n'.format(done='Done' if candInfo['challenge']=='YES' else '*NO*')
+        challengeTxt = '• Challenge: {done}\n'.format(done='Done' if candInfo['challenge_finished']=='YES' else '*NO*')
         if candInfo['challenge_task']:
             challengeTxt += '\t - {task}\n'.format(task=candInfo['challenge_task'])
 
@@ -258,34 +193,22 @@ def formatCandidateText(dct):
     return block
 
 """
-POST Error message to Slack
-"""
-def error(msg, attachments, response_url):
-    data = {
-        "response_type": "ephemeral",
-        "text": msg,
-        "attachments": attachments
-    }
-    requests.post(response_url, json=data)
-
-# DELETE `@TASK` IF NOT RUNNING ZAPPA (AWS LAMBDA)
-"""
 Runs bread and butter of code and POST back to slack
 """
-# @task
-def runGoogleSheets(req):
-    response_url = req['response_url']
+def exec_track_candidates(req):
+    # Login into client
+    authorization.login()
 
     # Check if argument len is sufficient
     if len(req['text']) < 3:
-        error('Please submit an expression with more than two characters', actions['/check']['helpTxt'], req['response_url'])
+        utils.error_res('Please submit an expression with more than two characters', helpTxt, req['response_url'])
         return
 
     # Retrieve candidate info according to text in Slack payload
     candidateInfos = getMatchedCandidates(req['text'])
 
     if len(candidateInfos) == 0:
-        error('No candidates found with given keyword', actions['/check']['helpTxt'], req['response_url'])
+        utils.error_res('No candidates found with given keyword', helpTxt, req['response_url'])
         return
 
     # Format candidate info into Slack JSON format
@@ -295,55 +218,4 @@ def runGoogleSheets(req):
         'response_type': 'ephemeral',
         'blocks' : candidateFormatString,
     }
-    requests.post(response_url, json=data)
-
-"""
-POST request from Slack channel
-Command: `/check <candidate name>`
-"""
-@app.route('/candidatetracker/check', methods=['POST'])
-def track_candidates():
-
-    # Check if valid request through (team_id) and (token)
-    if not is_request_valid(request):
-        abort(400)
-
-    # Retrieve payload from Slack
-    req = request.form
-
-    # Check if possible command
-    if not actionIsValid(req['command']):
-        error('Please submit a valid command', actions['/check']['helpTxt'], req['response_url'])
-        return
-
-    # Login into client
-    if creds.access_token_expired:
-        client.login()
-
-    # Create a thread to spawn find the correct values
-    processThread = threading.Thread(
-            target=runGoogleSheets,
-            args=(req,)
-        )
-    processThread.start()
-
-    # -- UNCOMMENT -- if not using threading
-    # runGoogleSheets(req)
-
-    # Send back a temporary loading response
-    return jsonify(
-        response_type='ephemeral',
-        text='Loading your candidate data...',
-    )
-
-
-"""
-GET request for testing
-Command: `/check <candidate name>`
-"""
-@app.route('/candidatetracker/test', methods=['GET'])
-def test():
-    return jsonify( text='What\'s HKN?')
-
-if __name__ == '__main__':
-    app.run()
+    requests.post(req['response_url'], json=data)

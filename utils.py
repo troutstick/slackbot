@@ -3,15 +3,17 @@ import requests
 import settings
 import re
 
-standardCol = settings.getFixedStandardColumns()
+# Fixed columns on each spreadsheet
+standardCol = settings.get_fixed_column_values()
 
 """
 Find the Google Sheet row (exact) of each name matching with expr [no off-by-one error]
 Use only in Candidate Tracker Sheet (candSheet variable for reference)
 """
-def matchAllCandidates(expr, sheetName):
+def get_candidate_row_number(expr, sheetName):
     expr = expr.lower()
     nameIndices = []
+    print(sheetName)
     nameLst = sheetName.col_values(standardCol['name'])[1:]
 
     for i in range(len(nameLst)):
@@ -20,6 +22,32 @@ def matchAllCandidates(expr, sheetName):
             nameIndices.append(i+2)
 
     return nameIndices
+
+"""
+Return the keywords given event type
+@params keywords - list of requested event types (e.g. social, prof, oh)
+@return lst - list of list of allowed keywords
+"""
+def get_keywords(keywords):
+    office = ['o', '1', 'oh', 'office', 'hours']
+    socials = ['s', 'soc', 'social', 'socials']
+    profs = ['p', 'prof', 'professional']
+    chall = ['c', 'chall', 'challenge']
+
+    keywordNames = {
+        'social' : socials,
+        'prof' : profs,
+        'oh' : office,
+        'chall' : chall
+    }
+
+    if len(keywords) == 1:
+        return keywordNames[keywords[0]]
+
+    lst = []
+    for name in keywords:
+        lst.append(keywordNames[name])
+    return lst
 
 """
 POST Error message to Slack
@@ -32,7 +60,7 @@ def error(msg, attachments):
     )
 
 """
-POST Error message to Slack
+POST Error message to Slack using response url
 """
 def error_res(msg, attachments, response_url):
     data = {
