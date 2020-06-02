@@ -79,7 +79,7 @@ def exec_assign_challenge(req):
         return
 
     # Locate matching candidate rows from candidate_name
-    candidate_row_list = matchAllCandidates(candidate_name, candidateSheet)
+    candidate_row_list = utils.get_candidate_row_number(candidate_name, candidateSheet)
     
     # If no candidate rows are returned, throw an error
     if len(candidate_row_list) <= 0:

@@ -70,9 +70,9 @@ def getMatchedCandidates(expr):
 
         # Add visited events into list
         eventsVisited = []
-        for eventIndex in range(sheetLabels, jump):
+        for eventIndex in range(4, len(sheetLabels)+4, jump):
             # Different scenarios for 1-1s and other event types
-            if candSheet[eventIndex] and jump == 2:
+            if candSheet[eventIndex] != '' and jump == 2:
                 eventsVisited.append("{type} : {name}".format(type=candSheet[eventIndex], name=candSheet[eventIndex+1]))
             elif candSheet[eventIndex] == '1' and candSheet[eventIndex] != "":
                 eventsVisited.append(sheetLabels[eventIndex])
