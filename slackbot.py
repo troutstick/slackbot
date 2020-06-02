@@ -267,6 +267,13 @@ Action: Returns list of current commands and their syntax
 @app.route(API_ROUTE + '/syntax', methods=['POST'])
 def cmd_commands():
     blocks = []
+    intro = {
+            'type':'section',
+            'text': {
+                'type': 'mrkdwn',
+                'text': 'Here is the syntax for the list of available commands for UPE Dev Bot! Contact @Wally if there is any problems'
+            }
+        }
     for command in actions.keys():
         command_text = '{cmd}\n'.format(cmd=command)
         for cmdInfo in actions[command]['cmdInfo']:
