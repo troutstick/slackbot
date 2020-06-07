@@ -45,7 +45,7 @@ def get_actions():
                 '`/award <person> | <points> | <feedback>`',
                 '`/award hi bot` - Introductory message',
                 '`/award why is bot` - Describes purpose of award bot',
-                '`/award showAll - lists all the committee members'
+                '`/award showAll` - lists all the committee members'
             ],
             'cmdTxt' : 'Rewards points to committee members'
         },
