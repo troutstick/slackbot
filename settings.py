@@ -91,6 +91,12 @@ def get_candidate_columns():
     }
 
 """
+Location of number of Office Hour checked off by holders
+"""
+def get_total_onos_checkoff():
+    return 19
+
+"""
 OH Feedback Spreadsheet columns
 """
 def get_OH_feedback_columns():

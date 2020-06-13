@@ -54,16 +54,18 @@ def getMatchedCandidates(expr):
     def getCandidateEvents(sheetName, event):
         # Configure whether event is One-on-Ones or not
         jump = 1
-        sheetLabels = sheetName.row_values(2)
+        sheet_labels = sheetName.row_values(2)
         candidate_row_loc = candRow + 1 # Prof / Social Sheet off by one bc of passwords listed
+
+        # Remove excess columns
+        cleaned_sheet_titles = sheet_labels[4:len(sheet_labels)-1]
+        
         if event == 'onos':
             jump = 2
             # Labels of current sheet
-            sheetLabels = sheetName.row_values(1)
+            sheet_labels = sheetName.row_values(1)
+            sheet_labels = sheet_labels[len(sheet_labels)-3]
             candidate_row_loc = candRow
-
-        # Remove excess columns
-        sheetLabels = sheetLabels[4:len(sheetLabels)-1]
 
         # Candidate Info on current sheet
         candSheet = sheetName.row_values(candidate_row_loc)
@@ -72,9 +74,9 @@ def getMatchedCandidates(expr):
         eventsVisited = []
         for eventIndex in range(4, len(sheetLabels)+4, jump):
             # Different scenarios for 1-1s and other event types
-            if candSheet[eventIndex] != '' and jump == 2:
+            if event == 'onos' and candSheet[eventIndex] != '':
                 eventsVisited.append("{type} : {name}".format(type=candSheet[eventIndex], name=candSheet[eventIndex+1]))
-            elif candSheet[eventIndex] == '1' and candSheet[eventIndex] != "":
+            elif event != 'onos' and candSheet[eventIndex] == '1':
                 eventsVisited.append(sheetLabels[eventIndex])
 
         return eventsVisited
@@ -105,6 +107,9 @@ def getMatchedCandidates(expr):
         # Insert `One-on-Ones` contents into dictionary
         candInfo['onos'] = getCandidateEvents(onoSheet, 'onos')
 
+        # Get Candidate Office Hour minimum checkout count
+        candInfo['onos_checkoff'] = onoSheet.row_values(candRow)[settings.get_total_onos_checkoff()-1]
+
         # Add candidate object into dictionary
         candidates[candidate[standardCol['name'] - 1]] = candInfo
 
@@ -125,9 +130,9 @@ def formatCandidateText(dct):
         nameTxt = '*{name}*\n'.format(name=name)
 
         # Socials
-        socialsTxt = '• Socials: {pss}/{req}\n'.format(pss=candInfo['socials_complete'], req=candInfo['socials_reqs'])
-        for social in candInfo['socials']:
-            socialsTxt += '\t - {social}\n'.format(social=social)
+        # socialsTxt = '• Socials: {pss}/{req}\n'.format(pss=candInfo['socials_complete'], req=candInfo['socials_reqs'])
+        # for social in candInfo['socials']:
+        #     socialsTxt += '\t - {social}\n'.format(social=social)
 
         # Professional
         profTxt = '• Professional: {pss}/{req}\n'.format(pss=candInfo['prof_complete'], req=candInfo['prof_reqs'])
@@ -135,9 +140,15 @@ def formatCandidateText(dct):
             profTxt += '\t - {prof}\n'.format(prof=prof)
 
         # One-on-Ones
-        onoTxt = '• One-on-One: {pss}/{req}\n'.format(pss=candInfo['ono_complete'], req=candInfo['ono_reqs'])
-        for ono in candInfo['onos']:
-            onoTxt += '\t - {ono}\n'.format(ono=ono)
+        # onos_checkoff = candInfo['onos_checkoff']
+        # count = 0
+        # onoTxt = '• One-on-One: {pss}/{req}\n'.format(pss=candInfo['ono_complete'], req=candInfo['ono_reqs'])
+        # for ono in candInfo['onos']:
+        #     if count < onos_checkoff:
+        #         onoTxt += '\t - {ono} (checked off)\n'.format(ono=ono)
+        #         count += 1
+        #     else:
+        #         onoTxt += '\t - {ono}\n'.format(ono=ono)
 
         # Challenge
         challengeTxt = '• Challenge: {done}\n'.format(done='Done' if candInfo['challenge_finished']=='YES' else '*NO*')
@@ -163,8 +174,15 @@ def formatCandidateText(dct):
         socialOnoTxt = '• Socials / One-on-One: {pss}/{req}\n'.format(pss=candInfo['socials_ono_comp'], req=candInfo['socials_ono_reqs'])
         for social in candInfo['socials']:
             socialOnoTxt += '\t - {social}\n'.format(social=social)
+        
+        onos_checkoff = candInfo['onos_checkoff']
+        count = 0
         for ono in candInfo['onos']:
-            socialOnoTxt += '\t - {ono}\n'.format(ono=ono)
+            if count < onos_checkoff:
+                onoTxt += '\t - {ono} (checked off)\n'.format(ono=ono)
+                count += 1
+            else:
+                onoTxt += '\t - {ono}\n'.format(ono=ono)
 
         requirements = {
             'type':'section',
