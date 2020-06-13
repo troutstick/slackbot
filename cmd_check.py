@@ -64,7 +64,7 @@ def getMatchedCandidates(expr):
             jump = 2
             # Labels of current sheet
             sheet_labels = sheetName.row_values(1)
-            sheet_labels = sheet_labels[len(sheet_labels)-3]
+            cleaned_sheet_titles = sheet_labels[4:len(sheet_labels)-3]
             candidate_row_loc = candRow
 
         # Candidate Info on current sheet
@@ -72,12 +72,12 @@ def getMatchedCandidates(expr):
 
         # Add visited events into list
         eventsVisited = []
-        for eventIndex in range(4, len(sheetLabels)+4, jump):
+        for eventIndex in range(4, len(cleaned_sheet_titles)+4, jump):
             # Different scenarios for 1-1s and other event types
             if event == 'onos' and candSheet[eventIndex] != '':
                 eventsVisited.append("{type} : {name}".format(type=candSheet[eventIndex], name=candSheet[eventIndex+1]))
             elif event != 'onos' and candSheet[eventIndex] == '1':
-                eventsVisited.append(sheetLabels[eventIndex])
+                eventsVisited.append(sheet_labels[eventIndex])
 
         return eventsVisited
 
@@ -108,7 +108,7 @@ def getMatchedCandidates(expr):
         candInfo['onos'] = getCandidateEvents(onoSheet, 'onos')
 
         # Get Candidate Office Hour minimum checkout count
-        candInfo['onos_checkoff'] = onoSheet.row_values(candRow)[settings.get_total_onos_checkoff()-1]
+        candInfo['onos_checkoff'] = int(onoSheet.row_values(candRow)[settings.get_total_onos_checkoff()-1])
 
         # Add candidate object into dictionary
         candidates[candidate[standardCol['name'] - 1]] = candInfo
@@ -179,10 +179,10 @@ def formatCandidateText(dct):
         count = 0
         for ono in candInfo['onos']:
             if count < onos_checkoff:
-                onoTxt += '\t - {ono} (checked off)\n'.format(ono=ono)
+                socialOnoTxt += '\t - {ono} (checked off)\n'.format(ono=ono)
                 count += 1
             else:
-                onoTxt += '\t - {ono}\n'.format(ono=ono)
+                socialOnoTxt += '\t - {ono}\n'.format(ono=ono)
 
         requirements = {
             'type':'section',
