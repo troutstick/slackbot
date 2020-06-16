@@ -108,7 +108,7 @@ def checkoff_office_hours(candidate_row_number):
 
     # Checkoff candidate for their office hour
     onoSheet.update_cell(candidate_row_number, checked_off_column, str(checked_off_count))
-    return 'Successfully checked off {type} by {name}'.format(type=oh_type, name=oh_name)
+    return 'Successfully checked off {name} for office hours!'
 
 """
 Check off challenge event
@@ -128,7 +128,7 @@ def checkoff_challenge(candidate_row_number):
 
     # Checkoff candidate for their challenge
     candSheet.update_cell(candidate_row_number, challenge_col, "YES")
-    return 'Successfully checked off candidate for their challenge!'
+    return 'Successfully checked off {name} for their challenge!'
 
 """
 Execute /checkoff command
@@ -184,7 +184,7 @@ def exec_checkoff_candidate(req):
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": text
+				"text": text.format(name=candidate_name)
 			}
 
 		},
