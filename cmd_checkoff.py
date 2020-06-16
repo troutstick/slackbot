@@ -72,7 +72,7 @@ def is_valid_channel(event_type, channel_id):
         return None
 
     # Office hours command can be ran in #office-hours and #officers
-    if event_type == 'oh' and channel_dct['office-hours'] != channel_id and channel_dct['officers'] != channel_id:
+    if event_type == 'oh' and channel_dct['oh-holders'] != channel_id and channel_dct['officers'] != channel_id:
         return 'Office Hour command must be submitting in #office-hours channel'
     elif channel_dct['officers'] != channel_id:
         return 'Command must be submitted in #officers channel'
@@ -97,43 +97,17 @@ Check off office hours
 @return text - result of checking off candidate
 """
 def checkoff_office_hours(candidate_row_number):
-    # Find Number of Current One on One
-    candidate_row = onoSheet.row_values(candidate_row_number)
+    # Column number of Checked off Count column
+    checked_off_column = settings.get_checked_off_column()
 
-    # Get total number of One on Ones in Candidate Tracking Sheet (last number in cell)
-    current_count = int(candidate_row[-1])
+    # Retrieve previous cell value
+    checked_off_count = int(onoSheet.cell(candidate_row_number, checked_off_column).value)
 
-    # Candidate email (unique number)
-    candidate_email = candidate_row[settings.get_fixed_column_values()['email']-1]
+    # Increment count
+    checked_off_count += 1
 
-    # Get number of feedback Ones in Feedback form
-    oh_feedback_cols = settings.get_OH_feedback_columns()
-    feedback_emails = feedback_sheet.col_values(oh_feedback_cols['email'])
-
-    feedback_count = feedback_emails.count(candidate_email)
-
-    if current_count > feedback_count:
-        return "Something went wrong: candidate sheet checked off more than feedback form please examine it"
-
-    if current_count == feedback_count:
-        return "Candidate has already been checked off for all office hours"
-
-    # Find latest cell value
-    new_feedback_row_number = [i for i, email in enumerate(feedback_emails) if email == candidate_email][current_count]
-    new_feedback_row = feedback_sheet.row_values(new_feedback_row_number)
-    oh_type = new_feedback_row[oh_feedback_cols['oh_type']-1]
-    oh_name = new_feedback_row[oh_feedback_cols['oh_holder']-1]
-
-    # Check if space left in spreadsheet
-    if "" not in candidate_row:
-        return "No more space within spreadsheet. Contact an officer to increase spreadsheet size"
-    # Find the first empty cell that exists
-    empty_index_col = candidate_row.index('') + 1
-
-    # Update cell values with current content
-    onoSheet.update_cell(candidate_row_number, empty_index_col, oh_type)
-    onoSheet.update_cell(candidate_row_number, empty_index_col+1, oh_name)
-
+    # Checkoff candidate for their office hour
+    onoSheet.update_cell(candidate_row_number, checked_off_column, str(checked_off_count))
     return 'Successfully checked off {type} by {name}'.format(type=oh_type, name=oh_name)
 
 """

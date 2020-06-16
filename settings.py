@@ -12,16 +12,16 @@ def get_actions():
         '/check' : {
             'helpTxt' : [{'text': "Type `/check <candidate name>` to view a candidate's status"}],
             'cmdInfo' : ['`/check <candidate name>`'],
-            'cmdTxt' : 'Lookup a candidate\'s current candidacy requirements'
+            'cmdTxt' : 'Lookup a candidate\'s current candidacy requirements given a regex expression on names'
         },
         '/newevent' : {
-            'helpTxt' : [{'text': 'Type `/newevent <type> | <name> | <mm/dd> | <password>` to create a new event \n(e.g. `/newevent social | Beat HKN | 4/20 | better_frat)`'}],
+            'helpTxt' : [{'text': 'Type `/newevent <type> | <name> | <mm>/<dd> | <password>` to create a new event \n(e.g. `/newevent social | Beat HKN | 4/20 | better_frat)`'}],
             'cmdInfo' : [
                 '`/newevent <type> | <name> | <mm/dd> | <password>` ',
                 '`/newevent list-all` - list all current created events',
                 '`/newevent help` - Brings up the help text info'
                 ],
-            'cmdTxt' : 'Create a new event and password (type: s - social, p - professional)'
+            'cmdTxt' : 'Create a new event name and password on internal sheet (type: s - social, p - professional)\n(e.g. `/newevent social | Beat HKN | 4/20 | better_frat)`'
         },
         '/checkoff' : {
             'helpTxt' : [{'text': 'Type `/checkoff <type> | <candidate name>` to checkoff a given candidate \n(e.g. `/checkoff oh | UPE`)'}],
@@ -29,7 +29,7 @@ def get_actions():
                 '`/checkoff <type> | <candidate name>`',
                 '`/checkoff help` - Brings up the help text info'
                 ],
-            'cmdTxt' : 'Checkoff candidate on event (type: oh - office hour, c - challenge)'
+            'cmdTxt' : 'Checkoff given candidate for their requirement (type: oh - office hour, c - challenge)\n(e.g. `/checkoff oh | Whale`)''
         },
         '/challenge' : {
             'helpTxt' : [{'text': 'Type `/challenge <officer first name> | <challenge desc> | <candidate name>` to assign a challenge for a candidate \n(e.g. `/challenge whale | Troll HKN | UPE`)'}],
@@ -37,7 +37,7 @@ def get_actions():
                 '`/challenge <officer first name> | <challenge desc> | <candidate name>`',
                 '`/challenge help` - Brings up the help text info'
                 ],
-            'cmdTxt' : 'Assign a challenge to the a candidate'
+            'cmdTxt' : 'Assign a challenge to the a candidate\n(e.g. `/challenge whale | Troll HKN | UPE`)'
         },
         '/award' : {
             'helpTxt' : [{'text': ''}],
@@ -59,7 +59,7 @@ def get_actions():
     }
 
 """
-Candidate Tracker Spreadsheet first 4 columns fixed on every sheet
+Column numbers of the first 4 columns values on every Candidate Tracking sheet
 """
 def get_fixed_column_values():
     return {
@@ -70,7 +70,7 @@ def get_fixed_column_values():
     }
 
 """
-Main Candidate Tracker sheet column values
+Column numbers of the Candidate Tracking > Candidate Tracking sheet
 """
 def get_candidate_columns():
     return {
@@ -91,9 +91,15 @@ def get_candidate_columns():
     }
 
 """
-Location of number of Office Hour checked off by holders
+Column number of the Total One-on-Ones in the Candidate Tracking > One-On-Ones sheet
 """
 def get_total_onos_checkoff():
+    return 19
+
+"""
+Column number of the Checked off Count in the Candidate Tracking > One-On-Ones sheet
+"""
+def get_checked_off_column():
     return 19
 
 """
@@ -113,5 +119,5 @@ def get_channel_ids():
     return {
         'officers' : 'G01347N2S4S',
         'softdev-bot-testing' : 'G013VTM2XBQ',
-        'office-hours' : "INSERT VALUES IN HERE"
+        'oh-holders' : "G015NTXBFNU"
     }

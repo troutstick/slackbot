@@ -271,11 +271,11 @@ def cmd_commands():
             'type':'section',
             'text': {
                 'type': 'mrkdwn',
-                'text': 'Here is the syntax for the list of available commands for UPE Dev Bot! Contact @Wally if there is any problems'
+                'text': 'Here is the syntax for the list of available commands for UPE Dev Bot! Contact softdev chair if there is any problems'
             }
         }
     for command in actions.keys():
-        command_text = '{cmd}\n'.format(cmd=command)
+        command_text = '{cmd}\n{txt}'.format(cmd=command, txt=actions[command]['cmdTxt'])
         for cmdInfo in actions[command]['cmdInfo']:
             command_text += '• {cmdInfo}\n'.format(cmdInfo=cmdInfo)
         blocks.append({

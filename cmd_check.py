@@ -179,7 +179,7 @@ def formatCandidateText(dct):
         count = 0
         for ono in candInfo['onos']:
             if count < onos_checkoff:
-                socialOnoTxt += '\t - {ono} (checked off)\n'.format(ono=ono)
+                socialOnoTxt += '\t - {ono} :white_check_mark:\n'.format(ono=ono)
                 count += 1
             else:
                 socialOnoTxt += '\t - {ono}\n'.format(ono=ono)
