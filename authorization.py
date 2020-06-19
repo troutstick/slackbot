@@ -25,13 +25,15 @@ socialSheet = candidate_sheet.worksheet('Socials')
 profSheet = candidate_sheet.worksheet('Professional Events')
 onoSheet = candidate_sheet.worksheet('One-On-Ones')
 feedback_sheet = oh_res_sheet.worksheet("Feedback Responses")
+oh_metadata_sheet = oh_res_sheet.worksheet("Metadata")
 
 sheetNames = {
     "Candidate Tracker" : candSheet,
     'Socials' : socialSheet,
     'Professional Events' : profSheet,
     'One-On-Ones' : onoSheet,
-    'Feedback Responses' : feedback_sheet
+    'Feedback Responses' : feedback_sheet,
+    'Metadata' : oh_metadata_sheet
 }
 
 def authorize():

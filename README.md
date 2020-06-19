@@ -14,6 +14,8 @@
     - [Adding to Flask](#adding-to-flask)
     - [Using Gspread](#using-gspread)
     - [Slack Slash Command](#slack-slash-command)
+  - [Adding a CRON Job](#adding-a-cron-job)
+    - [Adding to Flask](#adding-to-flask)
   - [Deployment](#deployment)
     - [Beta testing (locally)](#beta-testing-locally)
     - [OCF Deployment](#ocf-deployment)
@@ -64,6 +66,7 @@ upe_slack_bot
 │   cmd_check.py
 │   cmd_checkoff.py
 │   cmd_event.py
+│   cron_oh_checkoff.py
 │   
 └───assets
 │   │
@@ -78,11 +81,24 @@ A brief summary of the purpose of each python file:
 - `authorization.py` - initializes all the spreadsheets objects and authenticates with Googlesheets API using `/assets/tracker_creds.json`
 - `settings.py` - fixed hardcoded values within the spreadsheets entered as dictionary items
 - `utils.py` - helpful functions uses in processing slack slash commands (error response, retrieve keywords)
-- `cmd_amard.py` - conduct the `/award` command
-- `cmd_challenge.py` - process the `/challenge` command
-- `cmd_check.py` - process the `/check` command
-- `cmd_checkoff.py` - processs the `/checkoff` command
+- `cmd_award.py` - conduct the `/award` command
+  - Given: name, amount of points, feedback comments
+  - Executes: awards points to active, nice individuals within UPE
+- `cmd_challenge.py` - process the `/challenge` command 
+  - Given: officer first name, challange text, candidate Name
+  - Executes: assigns a challege to a candidate in Candidate Tracker sheet
+- `cmd_check.py` - process the `/check` command 
+  - Given: candidate name (regex expression)
+  - Executes: provides information about a candidate's current status to initiation
+- `cmd_checkoff.py` - process the `/checkoff` command which checks off
+  - Given: type to check off (oh - Office Hour, c - Challenge), Candidate name
+  - Executes: checks off individual given task, challenge = marks as complete, oh = increments oh-holder checkoff count
 - `cmd_event.py` - process the `/newevent` command
+  - Given: event type (s - social, p - profdev) event name, event password
+  - Executes: creates a new event and password on Candidate Tracker
+- `cron_oh_checkoff.py` - 
+  - Time: executes every day at 4 am
+  - Executes: moves candidate's feedback form information into Candidate Tracker sheet (OH type, OH holder)
 
 ### Documentation
 Listed here is the documentation necessary to maintain the Slack bot (slash commands) and Google Sheets API
@@ -90,6 +106,7 @@ Listed here is the documentation necessary to maintain the Slack bot (slash comm
 - [slash commands](https://api.slack.com/interactivity/slash-commands)
 - [slack message formatting](https://api.slack.com/reference/surfaces/formatting)
 - [flask](https://flask.palletsprojects.com/en/1.1.x/)
+- [advance python scheduler](https://apscheduler.readthedocs.io/en/stable/index.html)
 
 ## Adding a command
 In order to add a command to the app, to maintain consistency, several steps are required listed below. As the creator of this bot, I highly recommend maintain consistency and copying a template from the other existing commands as a starter plate.
@@ -167,6 +184,28 @@ After writing the Python script executing the desired command, test the command 
 
 5. Once finish testing push the code on to the UPE Github repository, and pull from the SSH server
 6. Run `systemctl --user restart slackbot` to reboot the Flask app with up-to-date code
+
+## Adding a CRON Job
+In order to add a command to the app, to maintain consistency, several steps are required listed below. As the creator of this bot, I highly recommend maintain consistency and copying a template from the other existing commands as a starter plate.
+
+### Creating CRON Script
+As recommended by the creator, there is some styling to help future software developers encountering this code.
+1. Create a new python file named `cron_<insert cron task here>.py`
+2. If using gspread, check out [gspread](#using-gspread)
+
+### Adding CRON to FLask
+1. Refer to [APScheduler Trigger Time](https://apscheduler.readthedocs.io/en/stable/modules/triggers/cron.html) to determine the exact timing. (note: the timing can be a bit tricky to achieve desired result)
+2. Import the beginning function at the top using `from <file> import <function>`
+3. Add the python script beginning function into `cron_job` in `slackbot.py` at the bottom of the file
+   
+``` python3
+cron_job.add_job(<function name>,'interval',<time arguments>)
+```
+
+### CRON Recommendations
+It is recommended that the occurrence of the CRON job doesn't occur very frequently as it is a pleasure to have free available resources to host our servers on the OCF server (we don't want to lose that privilege). Therefore, the recommended minimum occurrence would be once a day.
+
+If gspread is used in the CRON job, please note the limitations of invoking the API (refer to [documentation](#documentation) for more information)
 
 ## Deployment
 

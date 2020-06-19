@@ -12,7 +12,7 @@ def get_actions():
         '/check' : {
             'helpTxt' : [{'text': "Type `/check <candidate name>` to view a candidate's status"}],
             'cmdInfo' : ['`/check <candidate name>`'],
-            'cmdTxt' : 'Lookup a candidate\'s current candidacy requirements given a regex expression on names'
+            'cmdTxt' : 'Lookup a candidate\'s current candidacy requirements given a regex expression on names\n'
         },
         '/newevent' : {
             'helpTxt' : [{'text': 'Type `/newevent <type> | <name> | <mm>/<dd> | <password>` to create a new event \n(e.g. `/check whale`)'}],
@@ -91,16 +91,14 @@ def get_candidate_columns():
     }
 
 """
-Column number of the Total One-on-Ones in the Candidate Tracking > One-On-Ones sheet
+Column number of the Candidate Tracking > One-on-Ones Sheet
 """
-def get_total_onos_checkoff():
-    return 19
-
-"""
-Column number of the Checked off Count in the Candidate Tracking > One-On-Ones sheet
-"""
-def get_checked_off_column():
-    return 17
+def get_one_on_one_columns():
+    return {
+        'Checked Off' : 17,
+        'Feedback' : 18,
+        'Total One-on-Ones' : 19
+    }
 
 """
 OH Feedback Spreadsheet columns

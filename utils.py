@@ -13,7 +13,6 @@ Use only in Candidate Tracker Sheet (candSheet variable for reference)
 def get_candidate_row_number(expr, sheetName):
     expr = expr.lower()
     nameIndices = []
-    print(sheetName)
     nameLst = sheetName.col_values(standardCol['name'])[1:]
 
     for i in range(len(nameLst)):
@@ -22,6 +21,19 @@ def get_candidate_row_number(expr, sheetName):
             nameIndices.append(i+2)
 
     return nameIndices
+
+"""
+Find the Google Sheet row (exact) of each name matching with email
+Use only in Candidate Tracker Sheet (candSheet variable for reference)
+"""
+def get_candidate_row_number_by_email(target_email, sheetName):
+    emailLst = sheetName.col_values(standardCol['email'])[1:]
+    print("Target email: ", target_email)
+    for i in range(len(emailLst)):
+        # email matches Candidate Tracker record
+        if target_email == emailLst[i]:
+            return i+2
+    return -1
 
 """
 Return the keywords given event type

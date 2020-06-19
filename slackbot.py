@@ -19,7 +19,12 @@ from flask import abort, Flask, jsonify, request
 
 app = Flask(__name__)
 
+# CRON Job Import
+from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
+
 # Other files
+from cron_oh_checkoff import exec_oh_checkoff
 from cmd_check import exec_track_candidates
 from cmd_event import exec_create_event
 from cmd_challenge import exec_assign_challenge
@@ -300,6 +305,17 @@ GET request for testing
 @app.route(API_ROUTE + '/test', methods=['GET'])
 def cmd_test():
     return jsonify( text='What\'s HKN?')
+
+"""
+CRON Job for Checkoff Office Hours
+"""
+cron_job = BackgroundScheduler(daemon=True)
+cron_job.add_job(exec_oh_checkoff,'interval',hour='4')
+cron_job.start()
+
+# ---------- DO NOT DELETE THIS ----------
+# Shut down the scheduler when exiting the app
+atexit.register(lambda: cron_job.shutdown())
 
 if __name__ == '__main__':
     app.run()

@@ -108,7 +108,7 @@ def getMatchedCandidates(expr):
         candInfo['onos'] = getCandidateEvents(onoSheet, 'onos')
 
         # Get Candidate Office Hour minimum checkout count
-        candInfo['onos_checkoff'] = int(onoSheet.row_values(candRow)[settings.get_total_onos_checkoff()-1])
+        candInfo['onos_checkoff'] = int(onoSheet.row_values(candRow)[settings.get_one_on_one_columns()['Total One-on-Ones']-1])
 
         # Add candidate object into dictionary
         candidates[candidate[standardCol['name'] - 1]] = candInfo
