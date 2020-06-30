@@ -310,7 +310,7 @@ def cmd_test():
 CRON Job for Checkoff Office Hours
 """
 cron_job = BackgroundScheduler(daemon=True)
-cron_job.add_job(exec_oh_checkoff,'interval',days=1)
+cron_job.add_job(exec_oh_checkoff,'interval',minutes=10)
 cron_job.start()
 
 # ---------- DO NOT DELETE THIS ----------
