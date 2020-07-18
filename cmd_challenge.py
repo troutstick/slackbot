@@ -27,10 +27,6 @@ helpTxt = settings.get_actions()['/challenge']['helpTxt']
 sheetNames = ['Candidate Tracker']
 candidateSheet = authorization.get_sheet_objects(sheetNames)
 
-# Column Names
-standardCol = settings.get_fixed_column_values()
-candSheetCol = settings.get_candidate_columns()
-
 # Get Channel IDs
 channelIDs = settings.get_channel_ids()
 
@@ -40,7 +36,6 @@ Parse the text field of slack payload: '<officer first name> | <challenge descri
 @return: officer_name, challenge_text, candidate_name, err - if err is None then valid parse
 """
 def parse_challenge(text):
-    
     # Parse out the groups
     match_text = re.match(r'(\w+)\s*\|\s*(.+)\s*\|\s*(.+)', text.strip())
 
@@ -78,8 +73,11 @@ def exec_assign_challenge(req):
         utils.error_res(err_string, helpTxt, req['response_url'])
         return
 
+    # Find current column locations of candidate sheet
+    col_dct = utils.get_candidate_sheet_col_numbers()
+
     # Locate matching candidate rows from candidate_name
-    candidate_row_list = utils.get_candidate_row_number(candidate_name, candidateSheet)
+    candidate_row_list = utils.get_candidate_row_number(candidate_name, candidateSheet, col_dct['name'])
     
     # If no candidate rows are returned, throw an error
     if len(candidate_row_list) <= 0:
@@ -95,7 +93,7 @@ def exec_assign_challenge(req):
     if len(candidate_row_list) > 1 and len(candidate_row_list) <= 3:
 
         # Locate candidate name column index
-        candidate_name_col = standardCol['name']
+        candidate_name_col = col_dct['name']
         
         err_string = "Too many candidate matches; current matches: "
         # Iterate through the candidates to get their names
@@ -112,7 +110,7 @@ def exec_assign_challenge(req):
     candidate_row = candidate_row_list[0]
 
     # Locate challenge column index
-    candidate_col = candSheetCol['challenge_task']
+    candidate_col = col_dct['challenge_desc']
 
     # Update challenge cell with new challenge  
     candidateSheet.update_cell(candidate_row, candidate_col, officer_name + ": " + challenge_text)

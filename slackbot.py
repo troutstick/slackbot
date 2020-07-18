@@ -272,25 +272,38 @@ Action: Returns list of current commands and their syntax
 @app.route(API_ROUTE + '/syntax', methods=['POST'])
 def cmd_commands():
     blocks = []
-    intro = {
+
+    troll = {
             'type':'section',
             'text': {
                 'type': 'mrkdwn',
-                'text': 'Here is the syntax for the list of available commands for UPE Dev Bot! Contact softdev chair if there is any problems'
+                'text': "We're no strangers to love\nYou know the rules and so do I\nA full commitment's what I'm thinking of\nYou wouldn't get this from any other guy\nI just wanna tell you how I'm feeling\nGotta make you understand\nNever gonna give you up\nNever gonna let you down\nNever gonna run around and desert you\nNever gonna make you cry\nNever gonna say goodbye\nNever gonna tell a lie and hurt you\nWe've known each other for so long\nYour heart's been aching but you're too shy to say it\nInside we both know what's been going on\nWe know the game and we're gonna play it\nAnd if you ask me how I'm feeling\nDon't tell me you're too blind to see\nNever gonna give you up\nNever gonna let you down\nNever gonna run around and desert you\nNever gonna make you cry\nNever gonna say goodbye\nNever gonna tell a lie and hurt you\nNever gonna give you up\nNever gonna let you down\nNever gonna run around and desert you\nNever gonna make you cry\nNever gonna say goodbye\nNever gonna tell a lie and hurt you\nNever gonna give, never gonna give\n(Give you up)\n(Ooh) Never gonna give, never gonna give\n(Give you up)\nWe've known each other for so long\nYour heart's been aching but you're too shy to say it\nInside we both know what's been going on\nWe know the game and we're gonna play it\nI just wanna tell you how I'm feeling\nGotta make you understand\nNever gonna give you up\nNever gonna let you down\nNever gonna run around and desert you\nNever gonna make you cry\nNever gonna say goodbye\nNever gonna tell a lie and hurt you\nNever gonna give you up\nNever gonna let you down\nNever gonna run around and desert you\nNever gonna make you cry\nNever gonna say goodbye\nNever gonna tell a lie and hurt you\nNever gonna give you up\nNever gonna let you down\nNever gonna run around and desert you\nNever gonna make you cry"
             }
         }
-    for command in actions.keys():
-        command_text = '{cmd}\n{txt}'.format(cmd=command, txt=actions[command]['cmdTxt'])
-        for cmdInfo in actions[command]['cmdInfo']:
-            command_text += '• {cmdInfo}\n'.format(cmdInfo=cmdInfo)
-        blocks.append({
-            'type':'section',
-            'text': {
-                'type': 'mrkdwn',
-                'text': command_text
-            }
-        })
-        blocks.append({"type" : "divider"})
+
+    blocks.append(troll)
+
+    # intro = {
+    #         'type':'section',
+    #         'text': {
+    #             'type': 'mrkdwn',
+    #             'text': 'Here is the syntax for the list of available commands for UPE Dev Bot! Contact softdev chair if there is any problems'
+    #         }
+    #     }
+    # blocks.append(intro)
+    
+    # for command in actions.keys():
+    #     command_text = '{cmd}\n{txt}'.format(cmd=command, txt=actions[command]['cmdTxt'])
+    #     for cmdInfo in actions[command]['cmdInfo']:
+    #         command_text += '• {cmdInfo}\n'.format(cmdInfo=cmdInfo)
+    #     blocks.append({
+    #         'type':'section',
+    #         'text': {
+    #             'type': 'mrkdwn',
+    #             'text': command_text
+    #         }
+    #     })
+    #     blocks.append({"type" : "divider"})
 
     # Senc back list of commands
     return jsonify(

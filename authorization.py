@@ -4,7 +4,6 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 # Uitl Imports
 import os
-import settings
 
 # Authorization
 DIRNAME = os.path.dirname(__file__)
@@ -24,8 +23,11 @@ candSheet = candidate_sheet.worksheet("Candidate Tracker")
 socialSheet = candidate_sheet.worksheet('Socials')
 profSheet = candidate_sheet.worksheet('Professional Events')
 onoSheet = candidate_sheet.worksheet('One-On-Ones')
+softdev_metadata_sheet = candidate_sheet.worksheet("Softdev Metadata")
+
 feedback_sheet = oh_res_sheet.worksheet("Feedback Responses")
 oh_metadata_sheet = oh_res_sheet.worksheet("Metadata")
+
 
 sheetNames = {
     "Candidate Tracker" : candSheet,
@@ -33,7 +35,8 @@ sheetNames = {
     'Professional Events' : profSheet,
     'One-On-Ones' : onoSheet,
     'Feedback Responses' : feedback_sheet,
-    'Metadata' : oh_metadata_sheet
+    'OH Metadata' : oh_metadata_sheet,
+    'SoftDev Metadata' : softdev_metadata_sheet
 }
 
 def authorize():

@@ -86,11 +86,10 @@ Find the candidate names given the row values (1-indexed)
 @params lst - list of row positions in spreadsheet
 @return names - list of candidate names
 """
-def get_candidate_names(lst):
+def get_candidate_names(lst, name_column):
     names = []
-    stdColumnFormat = settings.get_fixed_column_values()
     for row in lst:
-        names.append(candSheet.cell(row, stdColumnFormat['name']).value)
+        names.append(candSheet.cell(row, name_column).value)
     return names
 
 """
@@ -98,10 +97,7 @@ Check off office hours
 @params candidate_row_number - row position on spreadsheet of candidate
 @return text - result of checking off candidate
 """
-def checkoff_office_hours(candidate_row_number):
-    # Column number of Checked off Count column
-    checked_off_column = settings.get_one_on_one_columns()['Checked Off']
-
+def checkoff_office_hours(candidate_row_number, checked_off_column):
     # Retrieve previous cell value
     checked_off_count = int(onoSheet.cell(candidate_row_number, checked_off_column).value)
 
@@ -117,19 +113,16 @@ Check off challenge event
 @params candidate_row_number - row position on spreadsheet of candidate
 @return text - result of checking off candidate
 """
-def checkoff_challenge(candidate_row_number):
-    # Column number of Challenge finished column
-    challenge_col = settings.get_candidate_columns()['challenge_finished']
-
+def checkoff_challenge(candidate_row_number, challenge_column):
     # Retrieve previous cell value
-    challenge_cell_value = candSheet.cell(candidate_row_number, challenge_col).value
+    challenge_cell_value = candSheet.cell(candidate_row_number, challenge_column).value
 
     # Check if candidate previously checked off
     if challenge_cell_value == "YES":
         return "Candidate was previously checked off already"
 
     # Checkoff candidate for their challenge
-    candSheet.update_cell(candidate_row_number, challenge_col, "YES")
+    candSheet.update_cell(candidate_row_number, challenge_column, "YES")
     return 'Successfully checked off {name} for their challenge!'
 
 """
@@ -151,15 +144,18 @@ def exec_checkoff_candidate(req):
         utils.error_res(err, helpTxt, req['response_url'])
         return
 
+    # Find current column locations of candidate sheet
+    col_dct = utils.get_candidate_sheet_col_numbers()
+
     # Match all candidates
-    matched_candidiate_list = utils.get_candidate_row_number(candidate_name, candSheet)
+    matched_candidiate_list = utils.get_candidate_row_number(candidate_name, candSheet, col_dct['name'])
     if len(matched_candidiate_list) == 0:
         utils.error_res("No matched candidate found", helpTxt, req['response_url'])
 
     if len(matched_candidiate_list) > 3:
         utils.error_res("Multiple candidate name matches, please be more specific", helpTxt, req['response_url'])
 
-    matched_candidate_names = get_candidate_names(matched_candidiate_list)
+    matched_candidate_names = get_candidate_names(matched_candidiate_list, col_dct['name'])
     if len(matched_candidiate_list) > 1:
         candidate_text = ' '.join(matched_candidate_names)
         utils.error_res("Matched more than 1 candidate: {names}".format(names=candidate_text), helpTxt, req['response_url'])
@@ -168,7 +164,7 @@ def exec_checkoff_candidate(req):
     text = None
     if event_type == 'oh':
         # Checkoff Office Hour
-        text = checkoff_office_hours(matched_candidiate_list[0])
+        text = checkoff_office_hours(matched_candidiate_list[0], col_dct['oh_checked_off_count'])
 
     elif event_type == 'social' or event_type == 'prof':
         # TODO
@@ -176,7 +172,7 @@ def exec_checkoff_candidate(req):
         return
     else:
         # Checkoff Challenge
-        text = checkoff_challenge(matched_candidiate_list[0])
+        text = checkoff_challenge(matched_candidiate_list[0], col_dct['challenge_completed'])
 
 
     data = {

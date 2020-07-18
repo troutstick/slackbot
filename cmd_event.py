@@ -11,7 +11,6 @@ UPE Slack Bot Slack Commands
 /newevent list-all
 - Lists all the current events
 """
-
 # Google Sheets Imports
 import gspread
 

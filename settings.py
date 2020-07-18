@@ -59,48 +59,6 @@ def get_actions():
     }
 
 """
-Column numbers of the first 4 columns values on every Candidate Tracking sheet
-"""
-def get_fixed_column_values():
-    return {
-        'email': 1,
-        'name': 2,
-        'track': 3,
-        'committee': 4
-    }
-
-"""
-Column numbers of the Candidate Tracking > Candidate Tracking sheet
-"""
-def get_candidate_columns():
-    return {
-        'socials_complete': 8,
-        'socials_reqs': 12,
-        'prof_complete': 9,
-        'prof_reqs': 13,
-        'ono_complete': 10,
-        'ono_reqs': 14,
-        'gm1': 20,
-        'gm2': 21,
-        'gm3': 22,
-        'paid': 23,
-        'challenge_finished': 25,
-        'challenge_task': 26,
-        'socials_ono_comp': 11, #DELETE THIS AFTER SP20 SEM
-        'socials_ono_reqs': 15 #DELETE THIS AFTER SP20 SEM
-    }
-
-"""
-Column number of the Candidate Tracking > One-on-Ones Sheet
-"""
-def get_one_on_one_columns():
-    return {
-        'Checked Off' : 17,
-        'Feedback' : 18,
-        'Total One-on-Ones' : 19
-    }
-
-"""
 OH Feedback Spreadsheet columns
 """
 def get_OH_feedback_columns():

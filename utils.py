@@ -1,19 +1,32 @@
 from flask import jsonify
 import requests
 import settings
+import authorization
 import re
 
-# Fixed columns on each spreadsheet
-standardCol = settings.get_fixed_column_values()
+"""
+Retrieve column number stored in Softdev Metadata in Candidate Tracker
+@return dct - dictionary of column names and corresponding column number
+"""
+def get_candidate_sheet_col_numbers():
+    softdev_metadata_sheet = authorization.get_sheet_objects(['SoftDev Metadata'])
 
+    col_numbers = softdev_metadata_sheet.get('C:D')[1:]
+
+    col_dct = {}
+    for lst in col_numbers:
+        col_dct[lst[0]] = int(lst[1])
+    
+    return col_dct
+    
 """
 Find the Google Sheet row (exact) of each name matching with expr [no off-by-one error]
 Use only in Candidate Tracker Sheet (candSheet variable for reference)
 """
-def get_candidate_row_number(expr, sheetName):
+def get_candidate_row_number(expr, sheetName, name_col):
     expr = expr.lower()
     nameIndices = []
-    nameLst = sheetName.col_values(standardCol['name'])[1:]
+    nameLst = sheetName.col_values(name_col)[1:]
 
     for i in range(len(nameLst)):
         # expr matches candidate name
@@ -26,8 +39,8 @@ def get_candidate_row_number(expr, sheetName):
 Find the Google Sheet row (exact) of each name matching with email
 Use only in Candidate Tracker Sheet (candSheet variable for reference)
 """
-def get_candidate_row_number_by_email(target_email, sheetName):
-    emailLst = sheetName.col_values(standardCol['email'])[1:]
+def get_candidate_row_number_by_email(target_email, sheetName, email_col):
+    emailLst = sheetName.col_values(email_col)[1:]
     print("Target email: ", target_email)
     for i in range(len(emailLst)):
         # email matches Candidate Tracker record
