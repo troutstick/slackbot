@@ -27,39 +27,8 @@ import utils
 helpTxt = settings.get_actions()['/checkoff']['helpTxt']
 
 # Spreadsheet Names
-sheetNames = ['Candidate Tracker', 'One-On-Ones']
-candSheet, onoSheet = authorization.get_sheet_objects(sheetNames)
-
-"""
-Parse the text field of slack payload: '<type> | <candidate name>'
-@params: text - slack payload of command
-@return: event_type, candidate_name, err - if err is None then valid parse
-"""
-def parseText(text):
-    # Parse out the groups
-    match_text = re.match(r'(\w+)\s*\|\s*(.+)', text)
-
-    if match_text == None:
-        return None, None, "Invalid command entry (e.g. /checkoff o John Doe"
-
-    event_type = match_text.group(1).lower()
-    candidate_name = match_text.group(2).strip()
-
-    office = ['o', '1', 'oh', 'office', 'hours']
-    socials = ['s', 'soc', 'social', 'socials']
-    profs = ['p', 'prof', 'professional']
-    chall = ['c', 'chall', 'challenge']
-
-    if event_type in office:
-        return 'oh', candidate_name, None
-    elif event_type in socials:
-        return 'social', candidate_name, None
-    elif event_type in profs:
-        return 'prof', candidate_name, None
-    elif event_type in chall:
-        return 'chall', candidate_name, None
-
-    return None, None, "Invalid event type. o - office hours, s - socials, p - professional, c - challenge"
+sheetNames = ['Candidate Tracker', 'One-On-Ones', 'Officer Chats']
+candSheet, onoSheet, officerSheet = authorization.get_sheet_objects(sheetNames)
 
 """
 Check whether slack command submitted in a valid channel
@@ -80,6 +49,44 @@ def is_valid_channel(event_type, channel_id):
     elif channel_dct['officers'] != channel_id:
         return 'Command must be submitted in #officers channel'
     return None
+
+"""
+Parse the text field of slack payload: '<type> | <candidate name>'
+@params: text - slack payload of command
+@return: event_type, candidate_name, err - if err is None then valid parse
+"""
+def parseText(text):
+
+    # Parse out the groups
+    match_text = text.split('|')
+
+    if len(match_text) != 2 and len(match_text) != 3:
+        return None, None, None, "Invalid command entry (e.g. /checkoff o John Doe)"
+
+    event_type = match_text[0].lower().strip()
+    candidate_name = match_text[1].strip()
+    officer_name = ""
+    if len(match_text) == 3:
+        officer_name = match_text[2].strip()
+
+    office_hours = ['1', 'oh', 'office', 'hours']
+    socials = ['s', 'soc', 'social', 'socials']
+    profs = ['p', 'prof', 'professional']
+    chall = ['c', 'chall', 'challenge']
+    officer_chats = ['oc', 'officer', 'officer chat', 'officer chats']
+
+    if event_type in office_hours:
+        return 'oh', candidate_name, officer_name, None
+    elif event_type in socials:
+        return 'social', candidate_name, officer_name, None
+    elif event_type in profs:
+        return 'prof', candidate_name, officer_name, None
+    elif event_type in chall:
+        return 'chall', candidate_name, officer_name, None
+    elif event_type in officer_chats:
+        return 'oc', candidate_name, officer_name, None
+
+    return None, None, None, "Invalid event type. oh - office hours, s - socials, p - professional, c - challenge, oc - officer chats"
 
 """
 Find the candidate names given the row values (1-indexed)
@@ -125,6 +132,19 @@ def checkoff_challenge(candidate_row_number, challenge_column):
     candSheet.update_cell(candidate_row_number, challenge_column, "YES")
     return 'Successfully checked off {name} for their challenge!'
 
+def checkoff_officer_chats(candidate_row_number, total_officer_chat_column, officer_name):
+    # Retrieve previous cell value
+    officer_chat_count = int(officerSheet.cell(candidate_row_number, total_officer_chat_column).value)
+
+    # Write Officer Name in next available column
+    update_column = officer_chat_count + 5
+
+    if update_column == total_officer_chat_column:
+        return 'No more space within spreadsheet. Contact an exec to increase space'
+    
+    officerSheet.update_cell(candidate_row_number, update_column, officer_name)
+    return 'Successfully checked off {name} for their officer chat!'
+
 """
 Execute /checkoff command
 """
@@ -133,7 +153,7 @@ def exec_checkoff_candidate(req):
     authorization.login()
 
     # Parse the command text
-    event_type, candidate_name, err = parseText(req['text'])
+    event_type, candidate_name, officer_name, err = parseText(req['text'])
     if err:
         utils.error_res(err, helpTxt, req['response_url'])
         return
@@ -165,14 +185,16 @@ def exec_checkoff_candidate(req):
     if event_type == 'oh':
         # Checkoff Office Hour
         text = checkoff_office_hours(matched_candidiate_list[0], col_dct['oh_checked_off_count'])
-
     elif event_type == 'social' or event_type == 'prof':
         # TODO
         utils.error_res("Command not implemented yet", helpTxt, req['response_url'])
         return
-    else:
+    elif event_type == 'chall':
         # Checkoff Challenge
         text = checkoff_challenge(matched_candidiate_list[0], col_dct['challenge_completed'])
+    elif event_type =='oc':
+        # Checkoff Officer Chat
+        text = checkoff_officer_chats(matched_candidiate_list[0], col_dct['officer_total_count'], officer_name)
 
 
     data = {

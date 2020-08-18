@@ -17,8 +17,8 @@ import settings
 import utils
 
 # Spreadsheet Objects
-sheetNames = ['Candidate Tracker', 'Socials', 'Professional Events', 'One-On-Ones']
-candSheet, socialSheet, profSheet, onoSheet = authorization.get_sheet_objects(sheetNames)
+sheetNames = ['Candidate Tracker', 'Socials', 'Professional Events', 'One-On-Ones', 'Officer Chats']
+candSheet, socialSheet, profSheet, onoSheet, officerSheet = authorization.get_sheet_objects(sheetNames)
 
 # Help Text
 helpTxt = settings.get_actions()['/check']['helpTxt']
@@ -52,7 +52,9 @@ def get_matched_candidates(expr):
         cand_dct['professional'] = get_candidate_social_and_prof_list(profSheet, cand_row)
         # Retrieve List of One on Ones candidate attended
         cand_dct['one_on_ones'] = get_candidate_one_on_one_list(cand_row)
-
+        # Retrieve List of Officer Chats candidate attended
+        cand_dct['officer_chats'] = get_candidate_officer_chat_list(cand_row)
+        print("OFFICERRR: ", cand_dct['officer_chats'])
         # Get Candidate Office Hour minimum checkout count
         cand_dct['onos_checkoff'] = int(onoSheet.row_values(cand_row)[col_dct['oh_total_count']-1])
 
@@ -79,6 +81,26 @@ def get_candidate_social_and_prof_list(sheet, cand_row):
         if candidate_content[i] == '1':
             visited_lst.append(event_title[i])
 
+    return visited_lst
+
+def get_candidate_officer_chat_list(cand_row):
+    # Grab row information in sheet
+    candidate_content = officerSheet.row_values(cand_row)
+
+    # Remove last column as represents final total
+    candidate_content.pop()
+
+    # Offset by given columns
+    offset = 4
+
+    # Remove first 4 columns represents candidate information
+    candidate_content = candidate_content[offset:]
+
+    visited_lst = []
+    for i in range(len(candidate_content)):
+        if candidate_content[i] != "":
+            visited_lst.append(candidate_content[i])
+    
     return visited_lst
 
 def get_candidate_one_on_one_list(cand_row):
@@ -111,9 +133,9 @@ def format_candidate_text(dct):
         nameTxt = '*{name}*\n'.format(name=name)
 
         # Socials
-        # socialsTxt = '• Socials: {pss}/{req}\n'.format(pss=candInfo['socials_complete'], req=candInfo['socials_reqs'])
-        # for social in candInfo['socials']:
-        #     socialsTxt += '\t - {social}\n'.format(social=social)
+        socialsTxt = '• Socials: {pss}/{req}\n'.format(pss=candInfo['socials_completed'], req=candInfo['socials_requirement'])
+        for social in candInfo['socials']:
+            socialsTxt += '\t - {social}\n'.format(social=social)
 
         # Professional
         profTxt = '• Professional: {pss}/{req}\n'.format(pss=candInfo['professional_completed'], req=candInfo['professional_requirement'])
@@ -121,15 +143,20 @@ def format_candidate_text(dct):
             profTxt += '\t - {prof}\n'.format(prof=prof)
 
         # One-on-Ones
-        # onos_checkoff = candInfo['onos_checkoff']
-        # count = 0
-        # onoTxt = '• One-on-One: {pss}/{req}\n'.format(pss=candInfo['ono_complete'], req=candInfo['ono_reqs'])
-        # for ono in candInfo['onos']:
-        #     if count < onos_checkoff:
-        #         onoTxt += '\t - {ono} (checked off)\n'.format(ono=ono)
-        #         count += 1
-        #     else:
-        #         onoTxt += '\t - {ono}\n'.format(ono=ono)
+        onos_checkoff = candInfo['onos_checkoff']
+        count = 0
+        onoTxt = '• One-on-One: {pss}/{req}\n'.format(pss=candInfo['one_on_ones_completed'], req=candInfo['one_on_ones_requirement'])
+        for ono in candInfo['one_on_ones']:
+            if count < onos_checkoff:
+                onoTxt += '\t - {ono} :white_check_mark:\n'.format(ono=ono)
+                count += 1
+            else:
+                onoTxt += '\t - {ono}\n'.format(ono=ono)
+        
+        # Officer Chat
+        officerTxt = '• Officer Chats: {pss}/{req}\n'.format(pss=candInfo['officer_chat_completed'], req=candInfo['officer_chat_requirement'])
+        for officer_chat in candInfo['officer_chats']:
+            officerTxt += '\t - {officer_chat}\n'.format(officer_chat=officer_chat)
 
         # Challenge
         challengeTxt = '• Challenge: {done}\n'.format(done='Done' if candInfo['challenge_completed']=='YES' else '*NO*')
@@ -150,39 +177,13 @@ def format_candidate_text(dct):
         if candInfo['initiate_met']=='YES':
             finished = ''
 
-        # --------------- REPLACE AFTER SP20 SEM -----------------
-        # requirements = {
-        #     'type':'section',
-        #     'text': {
-        #         'type': 'mrkdwn',
-        #         'text': nameTxt + socialsTxt + profTxt + onoTxt + challengeTxt
-        #     }
-        # }
-
-        # --------------- DELETE AFTER SP20 SEM -----------------
-        social_ono_completed = int(candInfo['socials_completed']) + int(candInfo['one_on_ones_completed'])
-        social_ono_required = int(candInfo['socials_requirement']) + int(candInfo['one_on_ones_requirement'])
-        socialOnoTxt = '• Socials / One-on-One: {pss}/{req}\n'.format(pss=social_ono_completed, req=social_ono_required)
-        for social in candInfo['socials']:
-            socialOnoTxt += '\t - {social}\n'.format(social=social)
-        
-        onos_checkoff = candInfo['onos_checkoff']
-        count = 0
-        for ono in candInfo['one_on_ones']:
-            if count < onos_checkoff:
-                socialOnoTxt += '\t - {ono} :white_check_mark:\n'.format(ono=ono)
-                count += 1
-            else:
-                socialOnoTxt += '\t - {ono}\n'.format(ono=ono)
-
         requirements = {
             'type':'section',
             'text': {
                 'type': 'mrkdwn',
-                'text': nameTxt + socialOnoTxt + profTxt + challengeTxt
+                'text': nameTxt + socialsTxt + profTxt + onoTxt + officerTxt + challengeTxt
             }
         }
-        # --------------- END DELETE AFTER SP20 SEM -----------------
 
         attendance = {
             'type':'section',

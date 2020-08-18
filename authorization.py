@@ -23,6 +23,7 @@ candSheet = candidate_sheet.worksheet("Candidate Tracker")
 socialSheet = candidate_sheet.worksheet('Socials')
 profSheet = candidate_sheet.worksheet('Professional Events')
 onoSheet = candidate_sheet.worksheet('One-On-Ones')
+officerSheet = candidate_sheet.worksheet('Officer Chats')
 softdev_metadata_sheet = candidate_sheet.worksheet("Softdev Metadata")
 
 feedback_sheet = oh_res_sheet.worksheet("Feedback Responses")
@@ -34,6 +35,7 @@ sheetNames = {
     'Socials' : socialSheet,
     'Professional Events' : profSheet,
     'One-On-Ones' : onoSheet,
+    'Officer Chats' : officerSheet,
     'Feedback Responses' : feedback_sheet,
     'OH Metadata' : oh_metadata_sheet,
     'SoftDev Metadata' : softdev_metadata_sheet

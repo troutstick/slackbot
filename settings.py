@@ -15,7 +15,7 @@ def get_actions():
             'cmdTxt' : 'Lookup a candidate\'s current candidacy requirements given a regex expression on names\n'
         },
         '/newevent' : {
-            'helpTxt' : [{'text': 'Type `/newevent <type> | <name> | <mm>/<dd> | <password>` to create a new event \n(e.g. `/check whale`)'}],
+            'helpTxt' : [{'text': 'Type `/newevent <type> | <name> | <mm>/<dd> | <password>` to create a new event \n(e.g. `/newevent social | Beat HKN | 4/20 | better_frat`)'}],
             'cmdInfo' : [
                 '`/newevent <type> | <name> | <mm/dd> | <password>` ',
                 '`/newevent list-all` - list all current created events',
@@ -26,10 +26,11 @@ def get_actions():
         '/checkoff' : {
             'helpTxt' : [{'text': 'Type `/checkoff <type> | <candidate name>` to checkoff a given candidate \n(e.g. `/checkoff oh | UPE`)'}],
             'cmdInfo' : [
-                '`/checkoff <type> | <candidate name>`',
+                '`/checkoff <type> | <candidate name>` - for office hours and challenges',
+                '`/checkoff <type> | <candidate name> | <officer first name>` - for officer chats',
                 '`/checkoff help` - Brings up the help text info'
                 ],
-            'cmdTxt' : 'Checkoff given candidate for their requirement (type: oh - office hour, c - challenge)\n(e.g. `/checkoff oh | Whale`)\n'
+            'cmdTxt' : 'Checkoff given candidate for their requirement (type: oh - office hour, c - challenge, oc - officer chats)\n(e.g. `/checkoff oh | Whale`)\n'
         },
         '/challenge' : {
             'helpTxt' : [{'text': 'Type `/challenge <officer first name> | <challenge desc> | <candidate name>` to assign a challenge for a candidate \n(e.g. `/challenge whale | Troll HKN | UPE`)'}],

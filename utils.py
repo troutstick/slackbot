@@ -41,7 +41,7 @@ Use only in Candidate Tracker Sheet (candSheet variable for reference)
 """
 def get_candidate_row_number_by_email(target_email, sheetName, email_col):
     emailLst = sheetName.col_values(email_col)[1:]
-    print("Target email: ", target_email)
+
     for i in range(len(emailLst)):
         # email matches Candidate Tracker record
         if target_email == emailLst[i]:

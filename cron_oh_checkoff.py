@@ -52,7 +52,6 @@ def exec_oh_checkoff():
 
     # Update Candidate Tracker (One-on-One sheet) for every misssing entry
     while processed_feedback_row <= len(email_lst):
-        #print("Processing row: ", processed_feedback_row)
         email = email_lst[processed_feedback_row-1]
         oh_holder = oh_holder_lst[processed_feedback_row-1]
         oh_type = oh_type_lst[processed_feedback_row-1]
@@ -62,7 +61,7 @@ def exec_oh_checkoff():
 
         if candidate_row > 0:
             # Write Value to Candidate Sheet
-            update_candidate_onos(candidate_row, oh_holder, oh_type)
+            update_candidate_onos(candidate_row, oh_holder, oh_type, col_dct)
 
         # Increment for next row entry
         processed_feedback_row += 1
