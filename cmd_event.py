@@ -85,9 +85,9 @@ def parse_event(text):
     event_pwd = match_text.group(4)
 
     # Check whether valid event
-    if event_guess in socials:
+    if event_guess.lower() in socials:
         event_type = 'social'
-    elif event_guess in profs:
+    elif event_guess.lower() in profs:
         event_type = 'prof'
     else:
         return None, None, None, 'Invalid Event. `social` or `prof` are possible events'

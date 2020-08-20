@@ -54,7 +54,7 @@ def get_matched_candidates(expr):
         cand_dct['one_on_ones'] = get_candidate_one_on_one_list(cand_row)
         # Retrieve List of Officer Chats candidate attended
         cand_dct['officer_chats'] = get_candidate_officer_chat_list(cand_row)
-        print("OFFICERRR: ", cand_dct['officer_chats'])
+
         # Get Candidate Office Hour minimum checkout count
         cand_dct['onos_checkoff'] = int(onoSheet.row_values(cand_row)[col_dct['oh_total_count']-1])
 
