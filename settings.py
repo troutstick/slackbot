@@ -76,5 +76,5 @@ def get_channel_ids():
     return {
         'officers' : 'G01347N2S4S',
         'softdev-bot-testing' : 'G013VTM2XBQ',
-        'oh-holders' : "G015NTXBFNU"
+        'oh-holders' : "G019E3F8U9M"
     }
