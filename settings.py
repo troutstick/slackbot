@@ -26,11 +26,11 @@ def get_actions():
         '/checkoff' : {
             'helpTxt' : [{'text': 'Type `/checkoff <type> | <candidate name>` to checkoff a given candidate \n(e.g. `/checkoff oh | UPE`)'}],
             'cmdInfo' : [
-                '`/checkoff <type> | <candidate name>` - for office hours and challenges',
+                '`/checkoff <type> | <candidate name>` - for professional services and challenges',
                 '`/checkoff <type> | <candidate name> | <officer first name>` - for officer chats',
                 '`/checkoff help` - Brings up the help text info'
                 ],
-            'cmdTxt' : 'Checkoff given candidate for their requirement (type: oh - office hour, c - challenge, oc - officer chats)\n(e.g. `/checkoff oh | Whale`)\n'
+            'cmdTxt' : 'Checkoff given candidate for their requirement (type: oh - professional services, c - challenge, oc - officer chats)\n(e.g. `/checkoff oh | Whale`)\n'
         },
         '/challenge' : {
             'helpTxt' : [{'text': 'Type `/challenge <officer first name> | <challenge desc> | <candidate name>` to assign a challenge for a candidate \n(e.g. `/challenge whale | Troll HKN | UPE`)'}],

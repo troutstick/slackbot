@@ -22,7 +22,7 @@ oh_res_sheet = client.open('Office Hour Feedback Form (Responses)')
 candSheet = candidate_sheet.worksheet("Candidate Tracker")
 socialSheet = candidate_sheet.worksheet('Socials')
 profSheet = candidate_sheet.worksheet('Professional Events')
-onoSheet = candidate_sheet.worksheet('One-On-Ones')
+onoSheet = candidate_sheet.worksheet('Professional Services')
 officerSheet = candidate_sheet.worksheet('Officer Chats')
 softdev_metadata_sheet = candidate_sheet.worksheet("Softdev Metadata")
 

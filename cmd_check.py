@@ -145,7 +145,7 @@ def format_candidate_text(dct):
         # One-on-Ones
         onos_checkoff = candInfo['onos_checkoff']
         count = 0
-        onoTxt = '• One-on-One: {pss}/{req}\n'.format(pss=candInfo['one_on_ones_completed'], req=candInfo['one_on_ones_requirement'])
+        onoTxt = '• Professional Services: {pss}/{req}\n'.format(pss=candInfo['one_on_ones_completed'], req=candInfo['one_on_ones_requirement'])
         for ono in candInfo['one_on_ones']:
             if count < onos_checkoff:
                 onoTxt += '\t - {ono} :white_check_mark:\n'.format(ono=ono)
