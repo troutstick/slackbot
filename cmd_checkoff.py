@@ -61,15 +61,13 @@ def parseText(text):
     match_text = text.split('|')
 
     if len(match_text) != 2 and len(match_text) != 3:
-        return None, None, None, "Invalid command entry (e.g. /checkoff o John Doe)"
+        return None, None, None, "Invalid command entry (e.g. /checkoff oh | John Doe)"
 
     event_type = match_text[0].lower().strip()
     candidate_name = match_text[1].strip()
     officer_name = ""
-    if len(match_text) == 3:
-        officer_name = match_text[2].strip()
 
-    office_hours = ['1', 'oh', 'office', 'hours']
+    office_hours = ['1', 'oh', 'office', 'hours', 'ps']
     socials = ['s', 'soc', 'social', 'socials']
     profs = ['p', 'prof', 'professional']
     chall = ['c', 'chall', 'challenge']
@@ -84,9 +82,13 @@ def parseText(text):
     elif event_type in chall:
         return 'chall', candidate_name, officer_name, None
     elif event_type in officer_chats:
-        return 'oc', candidate_name, officer_name, None
+        if len(match_text) == 3:
+            officer_name = match_text[2].strip()
+            return 'oc', candidate_name, officer_name.capitalize(), None
+        else:
+            return None, None, None, "Please write officer name in checking off for officer chats (e.g. /checkoff oc | John Doe | UPE)"
 
-    return None, None, None, "Invalid event type. oh - office hours, s - socials, p - professional, c - challenge, oc - officer chats"
+    return None, None, None, "Invalid event type. oh - office hours, c - challenge, oc - officer chats"
 
 """
 Find the candidate names given the row values (1-indexed)
