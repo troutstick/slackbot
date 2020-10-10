@@ -114,8 +114,8 @@ def parse_event(text):
         return None, None, None, 'Invalid date provided'
 
     # Password Checking
-    if len(event_pwd) < 5:
-        return None, None, None, 'Passwords must be longer than 5 characters'
+    if len(event_pwd) < 2:
+        return None, None, None, 'Passwords must be longer than 2 characters'
 
     # Password condition
     if len(text) != len(match_text.group(0)):
