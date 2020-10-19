@@ -187,7 +187,7 @@ def exec_checkoff_candidate(req):
 
     matched_candidate_names = get_candidate_names(matched_candidiate_list, col_dct['name'])
     if len(matched_candidiate_list) > 1:
-        candidate_text = ' '.join(matched_candidate_names)
+        candidate_text = ', '.join(matched_candidate_names)
         utils.error_res("Matched more than 1 candidate: {names}".format(names=candidate_text), helpTxt, req['response_url'])
         return
 
