@@ -74,13 +74,19 @@ def parseText(text):
     officer_chats = ['oc', 'officer', 'officer chat', 'officer chats']
 
     if event_type in office_hours:
-        return 'oh', candidate_name, officer_name, None
-    elif event_type in socials:
-        return 'social', candidate_name, officer_name, None
-    elif event_type in profs:
-        return 'prof', candidate_name, officer_name, None
+        if len(match_text) == 2:
+            return 'oh', candidate_name, officer_name, None
+        else:
+            return None, None, None, "Invalid command for checking off office hours (e.g. /checkoff oh | candidate)"
+    # elif event_type in socials:
+    #     return 'social', candidate_name, officer_name, None
+    # elif event_type in profs:
+    #     return 'prof', candidate_name, officer_name, None
     elif event_type in chall:
-        return 'chall', candidate_name, officer_name, None
+        if len(match_text) == 2:
+            return 'chall', candidate_name, officer_name, None
+        else:
+            return None, None, None, "Invalid command for checking off challenge (e.g /checkoff c | candidate)"
     elif event_type in officer_chats:
         if len(match_text) == 3:
             officer_name = match_text[2].strip()
@@ -173,14 +179,17 @@ def exec_checkoff_candidate(req):
     matched_candidiate_list = utils.get_candidate_row_number(candidate_name, candSheet, col_dct['name'])
     if len(matched_candidiate_list) == 0:
         utils.error_res("No matched candidate found", helpTxt, req['response_url'])
+        return
 
     if len(matched_candidiate_list) > 3:
         utils.error_res("Multiple candidate name matches, please be more specific", helpTxt, req['response_url'])
+        return
 
     matched_candidate_names = get_candidate_names(matched_candidiate_list, col_dct['name'])
     if len(matched_candidiate_list) > 1:
         candidate_text = ' '.join(matched_candidate_names)
         utils.error_res("Matched more than 1 candidate: {names}".format(names=candidate_text), helpTxt, req['response_url'])
+        return
 
     # Depending on event type execute checkoff different commands
     text = None
