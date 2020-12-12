@@ -215,7 +215,7 @@ def exec_checkoff_candidate(req):
 			"type": "section",
 			"text": {
 				"type": "mrkdwn",
-				"text": text.format(name=candidate_name)
+				"text": text.format(name=matched_candidiate_list[0])
 			}
 
 		},
