@@ -14,7 +14,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(DIRNAME, '
 client = gspread.authorize(creds)
 
 # Candidate Sheet
-candidate_sheet = client.open('Candidate Tracking Sheet (Internal)')
+candidate_sheet = client.open('Candidate Tracking Spreadsheet')
 # OH Feedback Form
 oh_res_sheet = client.open('Office Hour Feedback Form (Responses)')
 

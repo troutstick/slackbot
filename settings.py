@@ -74,7 +74,7 @@ Channel IDs for slack channel validations
 """
 def get_channel_ids():
     return {
-        'officers' : 'G01347N2S4S',
+        'officers' : 'G01GR6QRM0C',
         'softdev-bot-testing' : 'G013VTM2XBQ',
-        'oh-holders' : "G019E3F8U9M"
+        'oh-holders' : 'G01H3TCQZ5K'
     }
