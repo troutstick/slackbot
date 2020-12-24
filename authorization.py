@@ -14,7 +14,7 @@ creds = ServiceAccountCredentials.from_json_keyfile_name(os.path.join(DIRNAME, '
 client = gspread.authorize(creds)
 
 # Candidate Sheet
-candidate_sheet = client.open('Candidate Tracking Sheet (Internal)')
+candidate_sheet = client.open('Candidate Tracking Spreadsheet')
 # OH Feedback Form
 oh_res_sheet = client.open('Office Hour Feedback Form (Responses)')
 
@@ -62,6 +62,7 @@ def get_sheet_objects(spreadsheetsNames):
     for name in spreadsheetsNames:
         lst.append(sheetNames[name])
     return lst
+<<<<<<< HEAD
 
 """
 Check whether request contains correct access permissions
@@ -82,3 +83,5 @@ def check_permission(channel_type, channel_id):
         return channel_id == os.environ['SLACK_EVENTS']
     
     return False
+=======
+>>>>>>> 01eff1d13db7ddae217637a5aa590c9d6bd1724a

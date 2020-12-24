@@ -67,4 +67,18 @@ def get_OH_feedback_columns():
         'email' : 2,
         'oh_holder' : 3,
         'oh_type' : 4
+<<<<<<< HEAD
     }
+=======
+    }
+
+"""
+Channel IDs for slack channel validations
+"""
+def get_channel_ids():
+    return {
+        'officers' : 'G01GR6QRM0C',
+        'softdev-bot-testing' : 'G013VTM2XBQ',
+        'oh-holders' : 'G01H3TCQZ5K'
+    }
+>>>>>>> 01eff1d13db7ddae217637a5aa590c9d6bd1724a
