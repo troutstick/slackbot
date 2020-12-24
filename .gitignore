@@ -7,3 +7,4 @@ venv/
 # Private credentials
 assets/creds/
 env
+migration/

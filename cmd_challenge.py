@@ -27,9 +27,6 @@ helpTxt = settings.get_actions()['/challenge']['helpTxt']
 sheetNames = ['Candidate Tracker']
 candidateSheet = authorization.get_sheet_objects(sheetNames)
 
-# Get Channel IDs
-channelIDs = settings.get_channel_ids()
-
 """
 Parse the text field of slack payload: '<officer first name> | <challenge description> | <candidate name>'
 @params: text - slack payload of command
@@ -57,12 +54,9 @@ Execute the /newevent command
 def exec_assign_challenge(req):
     # Login into client
     authorization.login()
-
-    # Get current Slack channel id
-    channel_id = req['channel_id']
     
     # Verify that the command was run in #officers or #softdev-bot-testing
-    if channel_id != channelIDs['officers'] and channel_id != channelIDs['softdev-bot-testing']:
+    if not authorization.check_permission('officer', req['channel_id']):
         utils.error_res("Command must be submitted in #officers", helpTxt, req['response_url'])
         return
     

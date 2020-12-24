@@ -34,19 +34,15 @@ candSheet, onoSheet, officerSheet = authorization.get_sheet_objects(sheetNames)
 Check whether slack command submitted in a valid channel
 """
 def is_valid_channel(event_type, channel_id):
-    channel_dct = settings.get_channel_ids()
-
-    # Bypass all channel access rights
-    if channel_dct['softdev-bot-testing'] == channel_id:
-        return None
-
-    # Office hours command can be ran in #office-hours and #officers
+    # Professional Services check
     if event_type == 'oh':
-        if channel_dct['oh-holders'] == channel_id or channel_dct['officers'] == channel_id:
+        if authorization.check_permission('officer', channel_id) or authorization.check_permission('professional-mentors', channel_id):
             return None
         else:
-            return 'Office Hour command must be submitting in #office-hours channel'
-    elif channel_dct['officers'] != channel_id:
+            return 'Office Hour command must be submitting in #professional-mentors channel'
+    
+    # Otherwise must be in #officers
+    if not authorization.check_permission('officer', channel_id):
         return 'Command must be submitted in #officers channel'
     return None
 

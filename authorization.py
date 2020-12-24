@@ -62,3 +62,23 @@ def get_sheet_objects(spreadsheetsNames):
     for name in spreadsheetsNames:
         lst.append(sheetNames[name])
     return lst
+
+"""
+Check whether request contains correct access permissions
+@params - 
+@return - true if valid, false otherwise
+"""
+def check_permission(channel_type, channel_id):
+    # Bypass permissions if #softdev-slackbot channel
+    if channel_id == os.environ['SLACK_DEVELOP']:
+        return True
+
+    # Check access controls based on request
+    if channel_type == 'professional-mentors':
+        return channel_id == os.environ['SLACK_MENTORS']
+    elif channel_type == 'officer'
+        return channel_id == os.environ['SLACK_OFFICER']
+    elif channel_type == 'event'
+        return channel_id == os.environ['SLACK_EVENTS']
+    
+    return False
