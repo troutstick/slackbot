@@ -192,7 +192,7 @@ def exec_create_event(req):
     authorization.login()
     
     # Check if request stemmed from #events channel
-    if not authorization.check_permission('event', req['channel_id'])
+    if not authorization.check_permission('event', req['channel_id']):
         return utils.error_res('Command must be submitted in #events channel', helpTxt, req['response_url'])
 
     # Check if command is 'list-all'

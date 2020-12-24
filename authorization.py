@@ -76,9 +76,9 @@ def check_permission(channel_type, channel_id):
     # Check access controls based on request
     if channel_type == 'professional-mentors':
         return channel_id == os.environ['SLACK_MENTORS']
-    elif channel_type == 'officer'
+    elif channel_type == 'officer':
         return channel_id == os.environ['SLACK_OFFICER']
-    elif channel_type == 'event'
+    elif channel_type == 'event':
         return channel_id == os.environ['SLACK_EVENTS']
     
     return False
