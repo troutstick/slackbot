@@ -62,7 +62,6 @@ def get_sheet_objects(spreadsheetsNames):
     for name in spreadsheetsNames:
         lst.append(sheetNames[name])
     return lst
-<<<<<<< HEAD
 
 """
 Check whether request contains correct access permissions
@@ -83,5 +82,3 @@ def check_permission(channel_type, channel_id):
         return channel_id == os.environ['SLACK_EVENTS']
     
     return False
-=======
->>>>>>> 01eff1d13db7ddae217637a5aa590c9d6bd1724a
