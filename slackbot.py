@@ -172,15 +172,6 @@ def cmd_checkoff():
             attachments=actions[req['command']]['helpTxt'],
         )
 
-    # Check if command indicated help
-    if is_help_command(req['text']):
-        print(actions[req['command']]['helpTxt'][0])
-        return jsonify(
-            response_type='ephemeral',
-            text='Here is the format for `/checkoff` command:',
-            attachments=actions[req['command']]['helpTxt'],
-        )
-
     # Create a thread to spawn find the correct values to mitigate 3 seconds
     processThread = threading.Thread(
             target=exec_checkoff_candidate,
